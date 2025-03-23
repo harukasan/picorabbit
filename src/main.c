@@ -26,10 +26,9 @@ void core0_main() {
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
-    // Wait for Core 1 to be ready
-    if (!linebuffer_wait_ready()) {
-        printf("Core 1 startup failed!\n");
-        return;
+    // Wait for line buffer to be ready
+    while (!linebuffer_wait_ready()) {
+        tight_loop_contents();
     }
 
     // Wait for DVI to start
