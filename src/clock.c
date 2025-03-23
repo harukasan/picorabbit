@@ -85,4 +85,16 @@ void init_clock(void) {
 
     // Configure HSTX clock using USB PLL
     set_hstx_clock();
+
+    uint hstx_clock = clock_get_hz(clk_hstx);
+    double actual_refresh = hstx_clock / (double)(DVI_H_TOTAL * DVI_V_TOTAL * 10 / 2);
+
+    // Print clock information
+    printf("\nClock Status:\n");
+    printf("  System clock: %lu KHz\n", clock_get_hz(clk_sys) / 1000);
+    printf("  USB PLL clock: %lu KHz\n", clock_get_hz(clk_usb) / 1000);
+    printf("  Peripheral clock: %lu KHz\n", clock_get_hz(clk_peri) / 1000);
+    printf("  HSTX clock: %lu KHz\n", hstx_clock / 1000);
+    printf("  Target HSTX clock: %llu KHz\n", DVI_HSTX_CLOCK_HZ / 1000);
+    printf("  actual refresh rate: %.2f Hz\n", actual_refresh);
 }

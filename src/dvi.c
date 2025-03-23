@@ -8,6 +8,8 @@
 // matches the Pico DVI Sock board, which can be soldered onto a Pico 2:
 // https://github.com/Wren6991/Pico-DVI-Sock
 
+#include <string.h>
+
 #include "pico/stdlib.h"
 #include "hardware/clocks.h"
 #include "hardware/dma.h"
@@ -46,35 +48,40 @@
 // pingponging and tripping up the IRQs.
 
 static uint32_t vblank_line_vsync_off[] = {
-    HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
-    SYNC_V1_H1,
-    HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
-    SYNC_V1_H0,
-    HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
-    SYNC_V1_H1,
-    HSTX_CMD_NOP
+	HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
+	SYNC_V1_H1,
+	HSTX_CMD_NOP,
+	HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
+	SYNC_V1_H0,
+	HSTX_CMD_NOP,
+	HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
+	SYNC_V1_H1,
+	HSTX_CMD_NOP,
+	HSTX_CMD_NOP
 };
 
 static uint32_t vblank_line_vsync_on[] = {
-    HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
-    SYNC_V0_H1,
-    HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
-    SYNC_V0_H0,
-    HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
-    SYNC_V0_H1,
-    HSTX_CMD_NOP
+	HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
+	SYNC_V0_H1,
+	HSTX_CMD_NOP,
+	HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
+	SYNC_V0_H0,
+	HSTX_CMD_NOP,
+	HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
+	SYNC_V0_H1,
+	HSTX_CMD_NOP
 };
 
 static uint32_t vactive_line[] = {
-    HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
-    SYNC_V1_H1,
-    HSTX_CMD_NOP,
-    HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
-    SYNC_V1_H0,
-    HSTX_CMD_NOP,
-    HSTX_CMD_RAW_REPEAT | DVI_H_BACK_PORCH,
-    SYNC_V1_H1,
-    HSTX_CMD_TMDS       | DVI_H_ACTIVE
+	HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
+	SYNC_V1_H1,
+	HSTX_CMD_NOP,
+	HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
+	SYNC_V1_H0,
+	HSTX_CMD_NOP,
+	HSTX_CMD_RAW_REPEAT | DVI_H_BACK_PORCH,
+	SYNC_V1_H1,
+	HSTX_CMD_TMDS		| DVI_H_ACTIVE
 };
 
 // ----------------------------------------------------------------------------
@@ -94,6 +101,9 @@ static uint v_scanline = 2;
 // During the vertical active period, we take two IRQs per scanline: one to
 // post the command list, and another to post the pixels.
 static bool vactive_cmdlist_posted = false;
+
+// Buffer for white pixels
+static uint32_t white_pixels[DVI_H_ACTIVE / sizeof(uint32_t)];
 
 // Wait for DMA transfer completion
 void dvi_wait_for_transfer() {
@@ -140,6 +150,9 @@ void __scratch_x("") dma_irq_handler() {
 
 // Start DVI output
 void dvi_start() {
+    // Initialize white pixels buffer
+    memset(white_pixels, COLOR_WHITE, sizeof(white_pixels));
+
     // Configure HSTX's TMDS encoder for RGB332
     hstx_ctrl_hw->expand_tmds =
         2  << HSTX_CTRL_EXPAND_TMDS_L2_NBITS_LSB |

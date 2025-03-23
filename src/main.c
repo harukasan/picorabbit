@@ -11,10 +11,9 @@
 #include "linebuffer.h"
 #include "clock.h"
 
-#define CORE_READY_FLAG 123
-
 // Core 1: DVI output and line buffer management
 void core1_main() {
+    init_clock();
     linebuffer_init(DVI_H_ACTIVE);
     dvi_start();
 }
@@ -59,24 +58,11 @@ void core0_main() {
 int main() {
     // Configure voltage for high-speed operation
     vreg_set_voltage(VREG_VOLTAGE_1_30);
-    sleep_ms(10);
-
-    init_clock();
+    sleep_ms(100);
 
     stdio_init_all();
 
-    printf("PicoRabbit DVI\n");
-
-    uint hstx_clock = clock_get_hz(clk_hstx);
-    double actual_refresh = hstx_clock / (double)(DVI_H_TOTAL * DVI_V_TOTAL * 10 / 2);
-
-    // Print clock information
-    printf("\nClock Status:\n");
-    printf("  System clock: %lu KHz\n", clock_get_hz(clk_sys));
-    printf("  USB PLL clock: %lu Hz\n", clock_get_hz(clk_usb));
-    printf("  Peripheral clock: %lu Hz\n", clock_get_hz(clk_peri));
-    printf("  HSTX clock: %lu Hz\n", hstx_clock);
-    printf("  actual refresh rate: %.2f Hz\n", actual_refresh);
+    printf("PicoRabbit DVI - Blinking Test\n");
 
     // Launch core 1
     printf("\nStarting Core 1...\n");
