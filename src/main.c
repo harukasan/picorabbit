@@ -1,43 +1,57 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include "hardware/gpio.h"
 #include "hardware/vreg.h"
 #include "hardware/clocks.h"
+#include "hardware/irq.h"
 #include "dvi.h"
-#include "framebuffer.h"
+#include "linebuffer.h"
 #include "clock.h"
 
-// Core 1: Infinite loop
+#define CORE_READY_FLAG 123
+
+// Core 1: DVI output and line buffer management
 void core1_main() {
+    linebuffer_init(DVI_H_ACTIVE);
     dvi_start();
 }
 
-// Core 0: LED blinking and framebuffer control
+static uint8_t line_data[DVI_H_ACTIVE];
+
+// Core 0: Line generation and LED control
 void core0_main() {
     const uint LED_PIN = PICO_DEFAULT_LED_PIN;
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
+    // Wait for Core 1 to be ready
+    if (!linebuffer_wait_ready()) {
+        printf("Core 1 startup failed!\n");
+        return;
+    }
+
     // Wait for DVI to start
     dvi_wait_for_transfer();
 
     bool is_white = false;
+
     while (true) {
         // Toggle LED
         gpio_xor_mask(1u << LED_PIN);
 
-        // Toggle framebuffer between black and white
-        if (is_white) {
-            framebuffer_fill(COLOR_BLACK);
-            printf("black\n");
-        } else {
-            framebuffer_fill(COLOR_WHITE);
-            printf("white\n");
-        }
-        is_white = !is_white;
+        // Fill line data
+        memset(line_data, is_white ? COLOR_WHITE : COLOR_BLACK, DVI_H_ACTIVE);
 
+        // Send lines to Core 1
+        for (uint line = 0; line < DVI_V_ACTIVE; line++) {
+            linebuffer_write_line(line_data, line);
+        }
+
+        is_white = !is_white;
+        printf("%s\n", is_white ? "white" : "black");
         sleep_ms(500);
     }
 }

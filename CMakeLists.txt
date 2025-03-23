@@ -33,7 +33,7 @@ add_executable(picorabbit_dvi
     src/main.c
     src/dvi.c
     src/clock.c
-    src/framebuffer.c
+    src/linebuffer.c
 )
 
 # Include paths for header files

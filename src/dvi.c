@@ -19,7 +19,7 @@
 #include "hardware/structs/hstx_fifo.h"
 
 #include "dvi.h"
-#include "framebuffer.h"
+#include "linebuffer.h"
 
 // ----------------------------------------------------------------------------
 // DVI constants
@@ -104,8 +104,6 @@ void dvi_wait_for_transfer() {
 }
 
 void __scratch_x("") dma_irq_handler() {
-    // dma_pong indicates the channel that just finished, which is the one
-    // we're about to reload.
     uint ch_num = dma_pong ? DMACH_PONG : DMACH_PING;
     dma_channel_hw_t *ch = &dma_hw->ch[ch_num];
     dma_hw->intr = 1u << ch_num;
@@ -125,11 +123,14 @@ void __scratch_x("") dma_irq_handler() {
         ch->transfer_count = count_of(vactive_line);
         vactive_cmdlist_posted = true;
     } else {
-        // Calculate the offset into the frame buffer for the current scanline
+        // Calculate the offset into the line buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        ch->read_addr = (uintptr_t)&framebuf[line * DVI_H_ACTIVE];
+        const uint8_t* line_data = linebuffer_get_line(line);
+        ch->read_addr = (uintptr_t)line_data;
         ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
         vactive_cmdlist_posted = false;
+        // Swap line buffers after reading
+        linebuffer_swap();
     }
 
     if (!vactive_cmdlist_posted) {
@@ -139,8 +140,6 @@ void __scratch_x("") dma_irq_handler() {
 
 // Start DVI output
 void dvi_start() {
-    framebuffer_init();
-
     // Configure HSTX's TMDS encoder for RGB332
     hstx_ctrl_hw->expand_tmds =
         2  << HSTX_CTRL_EXPAND_TMDS_L2_NBITS_LSB |
@@ -160,7 +159,6 @@ void dvi_start() {
 
     // Serial output config: clock period of 5 cycles, pop from command
     // expander every 5 cycles, shift the output shiftreg by 2 every cycle.
-    hstx_ctrl_hw->csr = 0;
     hstx_ctrl_hw->csr =
         HSTX_CTRL_CSR_EXPAND_EN_BITS |
         5u << HSTX_CTRL_CSR_CLKDIV_LSB |
