@@ -1,6 +1,6 @@
 # PicoRabbit
 
-PicoRabbit is an experimental project to implement a presentation tool like [Rabbit](https://rabbit.shocker.org/en/) on Raspberry Pi Pico 2.
+PicoRabbit is an experimental project to implement a presentation tool like [Rabbit](https://rabbit-shocker.org/en/) on Raspberry Pi Pico 2.
 
 ## Features
 

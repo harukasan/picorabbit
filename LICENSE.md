@@ -26,7 +26,7 @@ SOFTWARE.
 
 ## src/dvi.c
 
-The `src/dvi.c` file is based on [raspberrypi/pico-examples](https://github.com/raspberrypi/pico-sdk/blob/2.1.1/pico_sdk_init.cmake) and is licensed under the BSD 3-Clause License:
+The `src/dvi.c` file is based on [raspberrypi/pico-examples/hstx/dvi_out_hstx_encoder/dvi_out_hstx_encoder.c](https://github.com/raspberrypi/pico-examples/blob/sdk-2.1.1/hstx/dvi_out_hstx_encoder/dvi_out_hstx_encoder.c) and is licensed under the BSD 3-Clause License:
 
 ```
 Copyright 2020 (c) 2020 Raspberry Pi (Trading) Ltd.
@@ -54,7 +54,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## pico_sdk_import.cmake
 
-The `pico_sdk_import.cmake` file is copied from [raspberrypi/pico-sdk] and is licensesd under BSD 3-Clause License:
+The `pico_sdk_import.cmake` file is copied from [raspberrypi/pico-sdk](https://github.com/raspberrypi/pico-sdk/blob/2.1.1/pico_sdk_init.cmake) and is licensesd under BSD 3-Clause License:
 
 ```
 Copyright 2020 (c) 2020 Raspberry Pi (Trading) Ltd.
