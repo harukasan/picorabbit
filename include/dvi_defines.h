@@ -2,7 +2,7 @@
 #define DVI_DEFINES_H
 
 // Include resolution specific timing constants
-#include "dvi_timing_1280x720p60.h"
+#include "dvi_timing_720x480p60.h"
 
 // Total timing values
 #define DVI_H_TOTAL (DVI_H_ACTIVE + DVI_H_FRONT_PORCH + DVI_H_SYNC + DVI_H_BACK_PORCH)
