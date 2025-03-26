@@ -1,3 +1,6 @@
 [submodule "vendor/font8x8"]
 	path = vendor/font8x8
 	url = https://github.com/dhepper/font8x8.git
+[submodule "vendor/mruby"]
+	path = vendor/mruby
+	url = https://github.com/mruby/mruby.git

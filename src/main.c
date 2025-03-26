@@ -12,6 +12,9 @@
 #include "clock.h"
 #include "text_renderer.h"
 
+#include "mruby.h"
+#include "mruby/compile.h"
+
 // Core 1: DVI output and line buffer management
 void core1_main() {
     init_clock();
@@ -66,6 +69,15 @@ int main() {
     sleep_ms(100);
 
     stdio_init_all();
+
+    mrb_state *mrb = mrb_open();
+    if (!mrb) {
+        printf("Failed to open mrb\n");
+        return 1;
+    }
+    mrb_load_string(mrb, "puts 'Hello world'\n");
+    mrb_close(mrb);
+
 
     printf("PicoRabbit DVI - RGB332 Text Test\n");
 

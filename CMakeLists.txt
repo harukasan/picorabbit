@@ -14,7 +14,6 @@ endif()
 # ====================================================================================
 cmake_minimum_required(VERSION 3.13)
 
-
 # Set target to Pico 2
 set(PICO_BOARD pico2)
 set(PICO_PLATFORM rp2350)
@@ -28,6 +27,21 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize Pico SDK
 pico_sdk_init()
 
+set(BUILD_CONFIG picorabbit-mruby-cortex-m33)
+
+# Build MRuby
+add_custom_target(build_mruby
+    COMMAND rake MRUBY_CONFIG=${CMAKE_CURRENT_SOURCE_DIR}/build_config/${BUILD_CONFIG}.rb
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vendor/mruby
+    COMMENT "Building mruby..."
+)
+
+# Add MRuby library
+add_library(mruby STATIC IMPORTED)
+set_target_properties(mruby PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/vendor/mruby/build/${BUILD_CONFIG}/lib/libmruby.a
+)
+
 # Source files
 add_executable(picorabbit_dvi
     src/main.c
@@ -37,9 +51,14 @@ add_executable(picorabbit_dvi
     src/text_renderer.c
 )
 
+# Add dependency to ensure MRuby is built before the main target
+add_dependencies(picorabbit_dvi build_mruby)
+
 # Include paths for header files
 target_include_directories(picorabbit_dvi PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/mruby/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/vendor/mruby/build/${BUILD_CONFIG}/include
 )
 
 # Link required libraries
@@ -51,6 +70,7 @@ target_link_libraries(picorabbit_dvi
     hardware_irq
     hardware_clocks
     hardware_vreg
+    mruby
 )
 
 # Enable USB and UART output
@@ -59,3 +79,5 @@ pico_enable_stdio_uart(picorabbit_dvi 1)
 
 # Generate .uf2 file
 pico_add_extra_outputs(picorabbit_dvi)
+
+string(APPEND CMAKE_EXE_LINKER_FLAGS "-Wl,--print-memory-usage")
