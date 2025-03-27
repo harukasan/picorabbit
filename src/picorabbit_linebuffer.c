@@ -1,6 +1,6 @@
 #include <string.h>
 #include "../mrbgems/mruby-picorabbit-linebuffer/include/picorabbit_linebuffer.h"
-#include "linebuffer.h"
+#include "line_buffer.h"
 #include "pico/stdlib.h"
 #include "dvi_defines.h"
 

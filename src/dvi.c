@@ -21,7 +21,7 @@
 #include "hardware/structs/hstx_fifo.h"
 
 #include "dvi.h"
-#include "linebuffer.h"
+#include "line_buffer.h"
 
 // ----------------------------------------------------------------------------
 // DVI constants
@@ -135,12 +135,12 @@ void __scratch_x("") dma_irq_handler() {
     } else {
         // Calculate the offset into the line buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        const uint8_t* line_data = linebuffer_get_line(line);
+        const uint8_t* line_data = line_buffer_get_line(line);
         ch->read_addr = (uintptr_t)line_data;
         ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
         vactive_cmdlist_posted = false;
         // Swap line buffers after reading
-        linebuffer_swap();
+        line_buffer_swap();
     }
 
     if (!vactive_cmdlist_posted) {

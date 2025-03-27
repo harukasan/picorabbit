@@ -8,8 +8,8 @@
 #include "hardware/clocks.h"
 #include "hardware/irq.h"
 #include "dvi.h"
-#include "linebuffer.h"
 #include "clock.h"
+#include "line_buffer.h"
 #include "text_renderer.h"
 
 #include "mruby.h"
@@ -19,7 +19,7 @@
 // Core 1: DVI output and line buffer management
 void core1_main() {
     init_clock();
-    linebuffer_init(DVI_H_ACTIVE);
+    line_buffer_init(DVI_H_ACTIVE);
     dvi_start();
 }
 
@@ -33,7 +33,7 @@ void core0_main() {
     text_renderer_init();
 
     // Wait for line buffer to be ready
-    while (!linebuffer_wait_ready()) {
+    while (!line_buffer_wait_ready()) {
         tight_loop_contents();
     }
 
@@ -41,16 +41,37 @@ void core0_main() {
     dvi_wait_for_transfer();
 
     // Write blank lines to line buffer
-    /* while (true){
-        linebuffer_add_line(get_text_line(linebuffer_current_line()));
-    }*/
+    uint16_t current_line = 0;
+    while (true) {
+        uint8_t* back_buffer = line_buffer_get_back_buffer();
+        memset(back_buffer, 0xFF, DVI_H_ACTIVE);
+
+        line_buffer_commit_line(current_line);
+        current_line = (current_line + 1) % DVI_V_ACTIVE;
+    }
+
+    // Note: The code below will not be reached in this test
 
     mrb_state *mrb = mrb_open();
     if (!mrb) {
         printf("Failed to open mrb\n");
         return;
     }
+
+    // Load main task first to define the render function
     mrb_load_irep(mrb, main_task);
+
+    // Call render function with line number
+    mrb_value args[1];
+    args[0] = mrb_fixnum_value(0); // line number
+    mrb_value self = mrb_top_self(mrb);
+    mrb_sym method = mrb_intern_lit(mrb, "render");
+
+    while (true) {
+        args[0] = mrb_fixnum_value(0);
+        mrb_funcall_argv(mrb, self, method, 1, args);
+    }
+
     mrb_close(mrb);
 }
 

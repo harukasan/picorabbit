@@ -54,9 +54,8 @@ add_executable(picorabbit_dvi
     src/main.c
     src/dvi.c
     src/clock.c
-    src/linebuffer.c
+    src/line_buffer.c
     src/text_renderer.c
-    src/picorabbit_linebuffer.c
     mrbgems/mruby-pico-memory-usage/ports/rp2350/memory_usage.c
     ${CMAKE_BINARY_DIR}/main_task.c
 )

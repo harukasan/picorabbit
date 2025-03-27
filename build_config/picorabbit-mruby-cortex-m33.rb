@@ -29,9 +29,6 @@ MRuby::CrossBuild.new("picorabbit-mruby-cortex-m33") do |conf|
   conf.gembox "stdlib"
 
   conf.gem File.join(local_gems_dir, "mruby-pico-print")
-  conf.gem File.join(local_gems_dir, "mruby-picorabbit-linebuffer")
-  conf.gem File.join(local_gems_dir, "mruby-pico-memory-usage")
   conf.gem File.join(mrubygems_dir, "mruby-compiler")
 
-  p conf
 end
