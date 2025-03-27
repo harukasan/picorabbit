@@ -45,11 +45,17 @@ void line_buffer_deinit(void);
 // Wait for line buffer to be ready (called by Core 0)
 bool line_buffer_wait_ready(void);
 
+// Get the line buffer width
+uint32_t line_buffer_get_width(void);
+
 // Get the back buffer
 uint8_t* line_buffer_get_back_buffer(void);
 
 // Get the front buffer
 uint8_t* line_buffer_get_front_buffer(void);
+
+// Fill the line buffer with a color
+void line_buffer_fill(uint8_t color);
 
 // Commit a line to the buffer
 void line_buffer_commit_line(uint16_t line_y);

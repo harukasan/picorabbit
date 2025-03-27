@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+
 #include "line_buffer.h"
 #include "pico/multicore.h"
 
@@ -49,6 +51,11 @@ bool line_buffer_wait_ready(void) {
     return flag == CORE_READY_FLAG;
 }
 
+// Get the line buffer width
+uint32_t line_buffer_get_width(void) {
+    return line_width;
+}
+
 // Get the back buffer
 uint8_t* line_buffer_get_back_buffer(void) {
     return line_buffer.buffer + line_buffer.current_buffer * line_width;
@@ -57,6 +64,12 @@ uint8_t* line_buffer_get_back_buffer(void) {
 // Get the front buffer
 uint8_t* line_buffer_get_front_buffer(void) {
     return line_buffer.buffer + !line_buffer.current_buffer * line_width;
+}
+
+// Fill the line buffer with a color
+void line_buffer_fill(uint8_t color) {
+    uint8_t* buffer = line_buffer_get_back_buffer();
+    memset(buffer, color, line_width);
 }
 
 // Commit a line to the buffer
@@ -84,6 +97,9 @@ const uint8_t* line_buffer_get_line(uint32_t line_number) {
         if (msg.line_y == line_number) {
             // Return the current buffer for DMA
             return line_buffer.buffer + msg.buffer_index * line_width;
+        } else {
+            printf("Wrong line buffer: %d, expected %d\n", msg.line_y, line_number);
+            line_number = msg.line_y;
         }
     }
     // Return current buffer if no new data

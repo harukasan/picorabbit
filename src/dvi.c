@@ -22,6 +22,7 @@
 
 #include "dvi.h"
 #include "line_buffer.h"
+#include "frame_buffer.h"
 
 // ----------------------------------------------------------------------------
 // DVI constants
@@ -93,10 +94,9 @@ static uint32_t vactive_line[] = {
 // First we ping. Then we pong. Then... we ping again.
 static bool dma_pong = false;
 
-// A ping and a pong are cued up initially, so the first time we enter this
-// handler it is to cue up the second ping after the first ping has completed.
-// This is the third scanline overall (-> =2 because zero-based).
-static uint v_scanline = 2;
+// Initial value is set to 0.
+// The line buffer queue is initialized with a different way from the example code.
+static uint v_scanline = 0;
 
 // During the vertical active period, we take two IRQs per scanline: one to
 // post the command list, and another to post the pixels.
@@ -133,14 +133,18 @@ void __scratch_x("") dma_irq_handler() {
         ch->transfer_count = count_of(vactive_line);
         vactive_cmdlist_posted = true;
     } else {
-        // Calculate the offset into the line buffer for the current scanline
+        // Calculate the offset into the frame buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        const uint8_t* line_data = line_buffer_get_line(line);
-        ch->read_addr = (uintptr_t)line_data;
-        ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
+        if (line < FRAME_HEIGHT) {
+            const uint8_t* line_data = frame_buffer_get_line(line);
+            ch->read_addr = (uintptr_t)line_data;
+            ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
+        } else {
+            // If we're beyond the frame buffer height, display white
+            ch->read_addr = (uintptr_t)white_pixels;
+            ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
+        }
         vactive_cmdlist_posted = false;
-        // Swap line buffers after reading
-        line_buffer_swap();
     }
 
     if (!vactive_cmdlist_posted) {
@@ -150,6 +154,9 @@ void __scratch_x("") dma_irq_handler() {
 
 // Start DVI output
 void dvi_start() {
+    // Initialize frame buffer
+    frame_buffer_init();
+
     // Initialize white pixels buffer
     memset(white_pixels, COLOR_WHITE, sizeof(white_pixels));
 
