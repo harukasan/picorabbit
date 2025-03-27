@@ -16,6 +16,8 @@ PicoRabbit is an experimental project to implement a presentation tool like [Rab
 
 The project requires a Raspberry Pi Pico 2 or other hardware with the RP2350 chip to output DVI using the HSTX interface. For video output, you need a digital video connector with current-limiting resistors connected to GPIOs 12-19. It matches the [Pico DVI Sock](https://github.com/Wren6991/Pico-DVI-Sock) design.
 
+![pico_dvi.jpg](pico_dvi.jpg)
+
 Ready-to-use boards are available from:
 
 - Switch Science: [DVI Adapter Board for Raspberry Pi Pico](https://www.switch-science.com/products/7431) (Japan)
