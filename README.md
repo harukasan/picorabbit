@@ -5,10 +5,10 @@ PicoRabbit is an experimental project to implement a presentation tool like [Rab
 ## Features
 
 - [x] DVI output using HSTX
-- [ ] Buffering
-- [ ] Text rendering
+- [x] Buffering
+- [x] Text rendering
 - [ ] Paging/Transition
-- [ ] Implementation in mruby/c
+- [x] mruby integration
 - [ ] PicoRuby integration
 - [ ] USB MSC support
 
@@ -33,6 +33,8 @@ Ready-to-use boards are available from:
 - GPIO 19: D1-
 
 ## Build Instructions
+
+I highly recommend using the official [Raspberry Pi Pico Extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=raspberry-pi.raspberry-pi-pico) to development and debugging. See [Getting Started guide](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf).
 
 ```bash
 mkdir build
