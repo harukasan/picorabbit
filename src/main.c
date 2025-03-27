@@ -13,7 +13,8 @@
 #include "text_renderer.h"
 
 #include "mruby.h"
-#include "mruby/compile.h"
+#include "mruby/irep.h"
+#include "main_task.h"
 
 // Core 1: DVI output and line buffer management
 void core1_main() {
@@ -39,28 +40,18 @@ void core0_main() {
     // Wait for DVI to start
     dvi_wait_for_transfer();
 
-    // Render colorful text
-    render_text(2, 2, "Hello", COLOR_RED);
-    render_text(8, 2, "World", COLOR_BLUE);
-    render_text(14, 2, "!", COLOR_GREEN);
+    // Write blank lines to line buffer
+    /* while (true){
+        linebuffer_add_line(get_text_line(linebuffer_current_line()));
+    }*/
 
-    // Custom color example
-    render_text(2, 4, "RGB332 Colors:", COLOR_WHITE);
-    render_text(2, 5, "Custom Color", RGB332(7,4,2)); // Orange-like color
-
-    uint32_t frame_count = 0;
-    while (true) {
-        // Send lines to Core 1
-        for (uint line = 0; line < DVI_V_ACTIVE; line++) {
-            linebuffer_write_line(get_text_line(line), line);
-        }
-
-        // Blink LED every 30 frames (about 0.5 seconds at 60Hz)
-        if (++frame_count >= 30) {
-            gpio_xor_mask(1u << LED_PIN);
-            frame_count = 0;
-        }
+    mrb_state *mrb = mrb_open();
+    if (!mrb) {
+        printf("Failed to open mrb\n");
+        return;
     }
+    mrb_load_irep(mrb, main_task);
+    mrb_close(mrb);
 }
 
 int main() {
@@ -69,15 +60,6 @@ int main() {
     sleep_ms(100);
 
     stdio_init_all();
-
-    mrb_state *mrb = mrb_open();
-    if (!mrb) {
-        printf("Failed to open mrb\n");
-        return 1;
-    }
-    mrb_load_string(mrb, "puts 'Hello world'\n");
-    mrb_close(mrb);
-
 
     printf("PicoRabbit DVI - RGB332 Text Test\n");
 

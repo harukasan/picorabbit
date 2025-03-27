@@ -29,6 +29,8 @@ typedef union {
 // Function prototypes
 void linebuffer_init(uint32_t width);
 void linebuffer_deinit(void);
+uint32_t linebuffer_current_line(void);
+bool linebuffer_add_line(const uint8_t *data);
 bool linebuffer_write_line(const uint8_t *data, uint32_t line_number);
 const uint8_t* linebuffer_get_line(uint32_t line_number);
 void linebuffer_swap(void);

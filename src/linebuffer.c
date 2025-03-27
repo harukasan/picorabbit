@@ -40,6 +40,21 @@ void linebuffer_deinit(void) {
     }
 }
 
+// Return current line number
+uint32_t linebuffer_current_line(void) {
+    return line_buffer.current_line;
+}
+
+// Add line data to current line of the buffer
+bool linebuffer_add_line(const uint8_t *data) {
+    linebuffer_write_line(data, line_buffer.current_line);
+    line_buffer.current_line++;
+    if (line_buffer.current_line >= DVI_V_ACTIVE) {
+        line_buffer.current_line = 0;
+    }
+    return true;
+}
+
 // Write line data to buffer
 bool linebuffer_write_line(const uint8_t *data, uint32_t line_number) {
     if (line_number >= DVI_V_ACTIVE || !line_buffer.buffer) {
@@ -70,10 +85,10 @@ const uint8_t* linebuffer_get_line(uint32_t line_number) {
             uint32_t raw = multicore_fifo_pop_blocking();
             fifo_msg_t msg = { .raw = raw };
 
-            if (msg.line_number == line_number) {
+            // if (msg.line_number == line_number) {
                 // Return the current buffer for DMA
                 return line_buffer.buffer + line_buffer.current_buffer * line_width;
-            }
+            //}
         }
     }
 

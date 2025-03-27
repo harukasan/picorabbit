@@ -36,6 +36,13 @@ add_custom_target(build_mruby
     COMMENT "Building mruby..."
 )
 
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/main_task.c
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/mrblib/main_task.rb
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/vendor/mruby/bin/mrbc -Bmain_task -o ${CMAKE_BINARY_DIR}/main_task.c ${CMAKE_CURRENT_SOURCE_DIR}/mrblib/main_task.rb
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/mrblib
+    COMMENT "Building main_task.c from main_task.rb..."
+)
+
 # Add MRuby library
 add_library(mruby STATIC IMPORTED)
 set_target_properties(mruby PROPERTIES
@@ -49,6 +56,9 @@ add_executable(picorabbit_dvi
     src/clock.c
     src/linebuffer.c
     src/text_renderer.c
+    src/picorabbit_linebuffer.c
+    mrbgems/mruby-pico-memory-usage/ports/rp2350/memory_usage.c
+    ${CMAKE_BINARY_DIR}/main_task.c
 )
 
 # Add dependency to ensure MRuby is built before the main target
