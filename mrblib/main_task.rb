@@ -1,5 +1,9 @@
 puts "Hello, world!"
 
-def render(line)
-	puts "Rendering line #{line}"
+include PicoRabbit::Draw
+
+loop do
+  background COLOR_BLUE
+  draw_text "Hello from Ruby!", 10, 10, COLOR_WHITE
+  commit
 end

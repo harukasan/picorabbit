@@ -43,6 +43,9 @@
         "framebuffer.h": "c",
         "pll.h": "c",
         "stdlib.h": "c",
-        "clocks.h": "c"
+        "clocks.h": "c",
+        "draw_text.h": "c",
+        "cstdint": "c",
+        "dvi_defines.h": "c"
     }
 }
