@@ -102,9 +102,6 @@ static uint v_scanline = 0;
 // post the command list, and another to post the pixels.
 static bool vactive_cmdlist_posted = false;
 
-// Buffer for white pixels
-static uint32_t white_pixels[DVI_H_ACTIVE / sizeof(uint32_t)];
-
 // Wait for DMA transfer completion
 void dvi_wait_for_transfer() {
     // Wait for PING DMA channel to be idle

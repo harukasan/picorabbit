@@ -30,10 +30,15 @@ pico_sdk_init()
 set(BUILD_CONFIG picorabbit-mruby-cortex-m33)
 
 # Build MRuby
-add_custom_target(build_mruby
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/vendor/mruby/build/${BUILD_CONFIG}/lib/libmruby.a
     COMMAND rake MRUBY_CONFIG=${CMAKE_CURRENT_SOURCE_DIR}/build_config/${BUILD_CONFIG}.rb
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vendor/mruby
     COMMENT "Building mruby..."
+)
+
+add_custom_target(build_mruby
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/mruby/build/${BUILD_CONFIG}/lib/libmruby.a
 )
 
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/main_task.c
@@ -90,3 +95,5 @@ pico_enable_stdio_uart(picorabbit_dvi 1)
 pico_add_extra_outputs(picorabbit_dvi)
 
 string(APPEND CMAKE_EXE_LINKER_FLAGS "-Wl,--print-memory-usage")
+
+add_subdirectory(tests EXCLUDE_FROM_ALL)
