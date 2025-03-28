@@ -9,8 +9,8 @@
 #include "hardware/irq.h"
 #include "dvi.h"
 #include "clock.h"
-#include "line_buffer.h"
-#include "text_renderer.h"
+#include "framebuffer.h"
+#include "draw.h"
 
 #include "mruby.h"
 #include "mruby/irep.h"
@@ -19,7 +19,8 @@
 // Core 1: DVI output and line buffer management
 void core1_main() {
     init_clock();
-    line_buffer_init(DVI_H_ACTIVE);
+    sleep_ms(1000);
+    framebuffer_init();
     dvi_start();
 }
 
@@ -29,37 +30,12 @@ void core0_main() {
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
-    // Initialize text renderer
-    text_renderer_init();
-
-    // Wait for line buffer to be ready
-    while (!line_buffer_wait_ready()) {
-        tight_loop_contents();
-    }
-
-    // Wait for DVI to start
-    dvi_wait_for_transfer();
-
-    // Write blank lines to line buffer
-    uint16_t current_line = 0;
-    while (true) {
-        uint8_t* back_buffer = line_buffer_get_back_buffer();
-        memset(back_buffer, 0xFF, DVI_H_ACTIVE);
-
-        line_buffer_commit_line(current_line);
-        current_line = (current_line + 1) % DVI_V_ACTIVE;
-    }
-
-    // Note: The code below will not be reached in this test
-
+    // Initialize mruby VM
     mrb_state *mrb = mrb_open();
     if (!mrb) {
         printf("Failed to open mrb\n");
         return;
     }
-
-    // Load main task first to define the render function
-    mrb_load_irep(mrb, main_task);
 
     // Call render function with line number
     mrb_value args[1];
@@ -67,9 +43,27 @@ void core0_main() {
     mrb_value self = mrb_top_self(mrb);
     mrb_sym method = mrb_intern_lit(mrb, "render");
 
+    // Wait for line buffer to be ready
+    while (!framebuffer_wait_ready()) {
+        tight_loop_contents();
+    }
+
+    // Wait for DVI to start
+    dvi_wait_for_transfer();
+
+    // Load main task first to define the render function
+    // mrb_load_irep(mrb, main_task);
+
+    // Draw red screen
+    uint16_t current_line = 0;
     while (true) {
-        args[0] = mrb_fixnum_value(0);
-        mrb_funcall_argv(mrb, self, method, 1, args);
+        uint8_t* back_buffer = framebuffer_get_draw();
+        memset(back_buffer, COLOR_RED, DVI_H_ACTIVE);
+
+        // Draw text
+        draw_text(back_buffer, DVI_H_ACTIVE, current_line, 10, 10, "Hello from C", COLOR_WHITE);
+
+        framebuffer_commit();
     }
 
     mrb_close(mrb);

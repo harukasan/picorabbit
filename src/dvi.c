@@ -21,7 +21,7 @@
 #include "hardware/structs/hstx_fifo.h"
 
 #include "dvi.h"
-#include "line_buffer.h"
+#include "framebuffer.h"
 
 // ----------------------------------------------------------------------------
 // DVI constants
@@ -102,9 +102,6 @@ static uint v_scanline = 2;
 // post the command list, and another to post the pixels.
 static bool vactive_cmdlist_posted = false;
 
-// Buffer for white pixels
-static uint32_t white_pixels[DVI_H_ACTIVE / sizeof(uint32_t)];
-
 // Wait for DMA transfer completion
 void dvi_wait_for_transfer() {
     // Wait for PING DMA channel to be idle
@@ -135,12 +132,14 @@ void __scratch_x("") dma_irq_handler() {
     } else {
         // Calculate the offset into the line buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        const uint8_t* line_data = line_buffer_get_line(line);
+        const uint8_t* line_data = framebuffer_get_scaled_line(line);
         ch->read_addr = (uintptr_t)line_data;
         ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
         vactive_cmdlist_posted = false;
         // Swap line buffers after reading
-        line_buffer_swap();
+        if (line == DVI_V_ACTIVE - 1) {
+            framebuffer_swap();
+        }
     }
 
     if (!vactive_cmdlist_posted) {
@@ -150,9 +149,6 @@ void __scratch_x("") dma_irq_handler() {
 
 // Start DVI output
 void dvi_start() {
-    // Initialize white pixels buffer
-    memset(white_pixels, COLOR_WHITE, sizeof(white_pixels));
-
     // Configure HSTX's TMDS encoder for RGB332
     hstx_ctrl_hw->expand_tmds =
         2  << HSTX_CTRL_EXPAND_TMDS_L2_NBITS_LSB |
