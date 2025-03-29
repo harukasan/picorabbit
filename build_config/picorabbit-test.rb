@@ -15,5 +15,5 @@ MRuby::Build.new do |conf|
 
   conf.gem File.join(local_gems_dir, "mruby-picorabbit-textbuf")
 
-  enable_test
+  conf.enable_test
 end
