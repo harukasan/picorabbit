@@ -59,7 +59,7 @@ void set_hstx_clock(void) {
 void init_clock(void) {
     // Configure system and peripheral clocks
     int usb_clock = 48 * MHZ;    // USB PLL clock frequency
-    int clock_ratio = 3;         // System PLL multiplier relative to USB PLL
+    int clock_ratio = 6;         // System PLL multiplier relative to USB PLL
     uint32_t system_clock = usb_clock * clock_ratio;
 
     // Set system clock to 144MHz (3 * 48MHz)
@@ -74,11 +74,17 @@ void init_clock(void) {
                                 CLOCKS_CLK_ADC_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
                                 system_clock,
                                 clock_ratio);
+    clock_configure_int_divider(clk_peri,
+                                0,
+                                CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
+                                system_clock,
+                                2);
+/*
     clock_configure_undivided(clk_peri,
                                 0,
                                 CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
                                 system_clock);
-
+*/
 
     // Configure UART0 with explicit baud rate
     uart_init(uart0, 115200);

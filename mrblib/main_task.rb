@@ -2,12 +2,12 @@ puts "Hello, world!"
 
 include PicoRabbit::Draw
 
+i = 0
 loop do
-	line_y = 0
-	while line_y < 480
-		background COLOR_BLUE
-		draw_text "Hello from Ruby!"
-  	commit_line line_y
-  	line_y += 1
-	end
+  puts i.to_s
+  i += 1
+
+  background COLOR_MAGENTA
+  draw_text "Hello, world!" + i.to_s, 0, 0, COLOR_WHITE
+  commit
 end

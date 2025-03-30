@@ -10,6 +10,7 @@ MRuby::CrossBuild.new("picorabbit-mruby-cortex-m33") do |conf|
   conf.archiver.command = "#{conf.host_target}-gcc-ar"
 
   conf.cc.flags.flatten!
+  conf.cc.flags << "-O3"
   conf.cc.flags << "-mcpu=cortex-m33"
   conf.cc.flags << "-mthumb"
   conf.cc.flags << "-ffunction-sections"
@@ -17,7 +18,6 @@ MRuby::CrossBuild.new("picorabbit-mruby-cortex-m33") do |conf|
 
   conf.cc.flags << "-fno-strict-aliasing"
   conf.cc.flags << "-fno-unroll-loops"
-  conf.cc.flags << "-mslow-flash-data"
 
   conf.cc.flags << "-fshort-enums"
 
@@ -27,6 +27,7 @@ MRuby::CrossBuild.new("picorabbit-mruby-cortex-m33") do |conf|
   conf.cc.flags << "-Wno-maybe-uninitialized"
 
   conf.gembox "stdlib"
+  conf.gembox "stdlib-ext"
 
   conf.gem File.join(local_gems_dir, "mruby-pico-print")
   conf.gem File.join(local_gems_dir, "mruby-picorabbit-draw")
