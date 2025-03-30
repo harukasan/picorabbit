@@ -22,8 +22,7 @@
 #include "hardware/structs/hstx_fifo.h"
 
 #include "dvi.h"
-#include "line_buffer.h"
-#include "frame_buffer.h"
+#include "framebuffer.h"
 
 // ----------------------------------------------------------------------------
 // DVI constants
@@ -145,16 +144,16 @@ void __scratch_x("") dma_irq_handler() {
     } else {
         // Calculate the offset into the frame buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        if (line < FRAME_HEIGHT) {
-            const uint8_t* line_data = frame_buffer_get_line(line);
-            ch->read_addr = (uintptr_t)line_data;
-            ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
-        } else {
-            // If we're beyond the frame buffer height, display white
-            ch->read_addr = (uintptr_t)white_pixels;
-            ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
-        }
+        frame_buffer_get_scaled_line(line_buffer[dma_pong], line);
+        const uint8_t* line_data = line_buffer[dma_pong];
+        ch->read_addr = (uintptr_t)line_data;
+        ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
         vactive_cmdlist_posted = false;
+
+        // Swap line buffers after reading
+        if (line == DVI_V_ACTIVE - 1) {
+            framebuffer_swap();
+        }
     }
 
     if (!vactive_cmdlist_posted) {
@@ -165,11 +164,8 @@ void __scratch_x("") dma_irq_handler() {
 
 // Start DVI output
 void dvi_start() {
-    // Initialize frame buffer
-    frame_buffer_init();
-
-    // Initialize white pixels buffer
-    memset(white_pixels, COLOR_WHITE, sizeof(white_pixels));
+    init_expand_table();
+    memset(line_buffer_half, 0x1C, sizeof(line_buffer_half));
 
     // Configure HSTX's TMDS encoder for RGB332
     hstx_ctrl_hw->expand_tmds =
