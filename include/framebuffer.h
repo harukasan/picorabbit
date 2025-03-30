@@ -7,10 +7,10 @@
 #include "dvi_defines.h"
 
 // Display resolution configuration
-#define FRAMEBUFFER_WIDTH 320 // Internal buffer width
-#define FRAMEBUFFER_HEIGHT 240 // Internal buffer height
-#define OUTPUT_WIDTH 640 // DVI output width (2x scale)
-#define OUTPUT_HEIGHT 480 // DVI output height (2x scale)
+#define FRAMEBUFFER_WIDTH DVI_H_ACTIVE // Internal buffer width
+#define FRAMEBUFFER_HEIGHT DVI_V_ACTIVE // Internal buffer height
+#define OUTPUT_WIDTH DVI_H_ACTIVE // DVI output width (2x scale)
+#define OUTPUT_HEIGHT DVI_V_ACTIVE // DVI output height (2x scale)
 
 // Frame buffer structure
 typedef struct {

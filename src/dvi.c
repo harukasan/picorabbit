@@ -110,16 +110,10 @@ void dvi_wait_for_transfer() {
     }
 }
 
-static uint8_t line_buffer[2][DVI_H_ACTIVE];
+static uint8_t frame_buffer[DVI_H_ACTIVE * DVI_V_ACTIVE];
 
-static uint8_t line_buffer_half[320];
-
-static uint16_t expand_table[256];
-
-static void init_expand_table(void) {
-    for (int c = 0; c < 256; c++) {
-        expand_table[c] = (uint16_t)((c << 8) | c);
-    }
+uint8_t *dvi_get_frame_buffer() {
+    return frame_buffer;
 }
 
 void __scratch_x("") dma_irq_handler() {
@@ -144,16 +138,10 @@ void __scratch_x("") dma_irq_handler() {
     } else {
         // Calculate the offset into the frame buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        frame_buffer_get_scaled_line(line_buffer[dma_pong], line);
-        const uint8_t* line_data = line_buffer[dma_pong];
+        const uint8_t* line_data = &frame_buffer[line * DVI_H_ACTIVE];
         ch->read_addr = (uintptr_t)line_data;
         ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
         vactive_cmdlist_posted = false;
-
-        // Swap line buffers after reading
-        if (line == DVI_V_ACTIVE - 1) {
-            framebuffer_swap();
-        }
     }
 
     if (!vactive_cmdlist_posted) {
@@ -164,8 +152,7 @@ void __scratch_x("") dma_irq_handler() {
 
 // Start DVI output
 void dvi_start() {
-    init_expand_table();
-    memset(line_buffer_half, 0x1C, sizeof(line_buffer_half));
+    memset(frame_buffer, 0, sizeof(frame_buffer));
 
     // Configure HSTX's TMDS encoder for RGB332
     hstx_ctrl_hw->expand_tmds =

@@ -13,4 +13,7 @@ void dvi_start();
 // Wait for DMA transfer completion
 void dvi_wait_for_transfer();
 
+// Get the current frame buffer
+uint8_t *dvi_get_frame_buffer();
+
 #endif // DVI_H
