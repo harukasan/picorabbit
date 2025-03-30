@@ -13,7 +13,7 @@
  * @param color color value
  */
 static mrb_value
-mrb_draw_text_with_color(mrb_state *mrb, mrb_value self)
+mrb_draw_text(mrb_state *mrb, mrb_value self)
 {
     mrb_value str;
     mrb_int x, y, color;
@@ -58,7 +58,6 @@ mrb_mruby_picorabbit_draw_gem_init(mrb_state *mrb)
     mrb_define_module_function(mrb, module_draw, "background", mrb_background, MRB_ARGS_REQ(1));
     mrb_define_module_function(mrb, module_draw, "commit_line", mrb_commit_line, MRB_ARGS_REQ(1));
 
-    mrb_define_module_function(mrb, module_draw, "_c_draw_text_with_color", mrb_draw_text_with_color, MRB_ARGS_REQ(4));
 
 }
 

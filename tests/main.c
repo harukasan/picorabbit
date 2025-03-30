@@ -3,7 +3,7 @@
 
 #include "hardware_interface.h"
 
-// テスト関数のプロトタイプ宣言
+// Prototype declarations for test functions
 void test_draw_background(void);
 void test_draw_rect(void);
 void test_draw_text(void);
@@ -11,9 +11,9 @@ void test_draw_text_fast(void);
 void run_framebuffer_tests(void);
 
 int main() {
-    printf("テストを開始します...\n");
+    printf("Starting tests...\n");
 
-    // ハードウェア初期化
+    // Hardware initialization
     hw_init();
 
     test_draw_background();
@@ -22,6 +22,6 @@ int main() {
     test_draw_text_fast();
     run_framebuffer_tests();
 
-    printf("全てのテストが成功しました！\n");
+    printf("All tests passed successfully!\n");
     return 0;
 }

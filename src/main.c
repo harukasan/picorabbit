@@ -47,15 +47,20 @@ void core0_main() {
     while (!line_buffer_wait_ready()) {
         tight_loop_contents();
     }
+    printf("framebuffer ready\n");
 
     // Wait for DVI to start
     dvi_wait_for_transfer();
+    printf("dvi transfer started\n");
 
     // Load main task first to define the render function
-    // mrb_load_irep(mrb, main_task);
+    mrb_value ret = mrb_load_irep(mrb, main_task);
+    if (mrb->exc) {
+        printf("mruby execution failed:\n");
+        mrb_print_error(mrb);
+    }
 
     // Draw red screen
-    uint16_t current_line = 0;
     while (true) {
         uint8_t* back_buffer = line_buffer_get_back_buffer();
         memset(back_buffer, COLOR_RED, DVI_H_ACTIVE);

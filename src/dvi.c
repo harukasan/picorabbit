@@ -8,6 +8,7 @@
 // matches the Pico DVI Sock board, which can be soldered onto a Pico 2:
 // https://github.com/Wren6991/Pico-DVI-Sock
 
+#include <stdio.h>
 #include <string.h>
 
 #include "pico/stdlib.h"
@@ -110,6 +111,18 @@ void dvi_wait_for_transfer() {
     }
 }
 
+static uint8_t line_buffer[2][DVI_H_ACTIVE];
+
+static uint8_t line_buffer_half[320];
+
+static uint16_t expand_table[256];
+
+static void init_expand_table(void) {
+    for (int c = 0; c < 256; c++) {
+        expand_table[c] = (uint16_t)((c << 8) | c);
+    }
+}
+
 void __scratch_x("") dma_irq_handler() {
     uint ch_num = dma_pong ? DMACH_PONG : DMACH_PING;
     dma_channel_hw_t *ch = &dma_hw->ch[ch_num];
@@ -148,6 +161,7 @@ void __scratch_x("") dma_irq_handler() {
         v_scanline = (v_scanline + 1) % DVI_V_TOTAL;
     }
 }
+
 
 // Start DVI output
 void dvi_start() {
@@ -254,5 +268,6 @@ void dvi_start() {
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
 
     dma_channel_start(DMACH_PING);
+    printf("dvi output started\n");
 }
 

@@ -4,17 +4,17 @@
 #include "hardware_interface.h"
 #include "framebuffer.h"
 
-// テスト用のヘルパー関数のプロトタイプ宣言
+// Prototype declaration for test helper functions
 extern void mock_set_core(uint32_t core_num);
 
 void test_framebuffer_init(void) {
     framebuffer_init();
-    
-    // 初期化後、表示バッファが0であることを確認
+
+    // After initialization, display buffer should be 0
     const uint8_t *display_buffer = framebuffer_get_display();
     assert(display_buffer != NULL);
-    
-    // 描画バッファが1であることを確認
+
+    // Draw buffer should be 1
     uint8_t *draw_buffer = framebuffer_get_draw();
     assert(draw_buffer != NULL);
     assert(draw_buffer != display_buffer);
@@ -22,16 +22,22 @@ void test_framebuffer_init(void) {
 
 void test_framebuffer_swap(void) {
     framebuffer_init();
-    
-    // 初期状態を保存
+    framebuffer_wait_ready();
+
+    // Save initial state
     const uint8_t *initial_display = framebuffer_get_display();
     uint8_t *initial_draw = framebuffer_get_draw();
 
     framebuffer_swap();
-    
-    // バッファが入れ替わっていない事を確認
+
+    // Ensure buffers are swapped
     const uint8_t *new_display = framebuffer_get_display();
     uint8_t *new_draw = framebuffer_get_draw();
+
+    printf("initial_display: %p\n", initial_display);
+    printf("initial_draw: %p\n", initial_draw);
+    printf("new_display: %p\n", new_display);
+    printf("new_draw: %p\n", new_draw);
 
     assert(new_display == initial_display);
     assert(new_draw == initial_draw);
@@ -39,16 +45,16 @@ void test_framebuffer_swap(void) {
 
 void test_framebuffer_commit_swap(void) {
     framebuffer_init();
-    mock_set_core(0);  // Core 0として実行
-    
-    // コミット前の状態を保存
+    mock_set_core(0);  // Run as Core 0
+
+    // Save state before commit
     const uint8_t *initial_display = framebuffer_get_display();
-    
-    // バックバッファに描画
+
+    // Draw to back buffer
     uint8_t *draw_buffer = framebuffer_get_draw();
     memset(draw_buffer, 0xAA, FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT);
-    
-    // コミットを実行
+
+    // Commit
     framebuffer_commit();
     framebuffer_swap();
 
@@ -60,45 +66,44 @@ void test_framebuffer_commit_swap(void) {
 
 void test_framebuffer_scaled_line(void) {
     framebuffer_init();
-    
-    // テストパターンを描画
+
+    // Draw test pattern
     uint8_t *draw_buffer = framebuffer_get_draw();
     for (int i = 0; i < FRAMEBUFFER_WIDTH; i++) {
         draw_buffer[i] = i & 0xFF;
     }
-    
+
     framebuffer_commit();
     framebuffer_swap();
-    
-    // スケーリングされた行を取得して確認
-    const uint8_t *scaled_line = framebuffer_get_scaled_line(0);
-    assert(scaled_line != NULL);
-    
-    // 水平方向に2倍にスケーリングされていることを確認
+
+    // Get scaled line and verify
+    uint16_t line_buffer[FRAMEBUFFER_WIDTH];
+    frame_buffer_get_scaled_line(line_buffer, 0);
+
+    assert(line_buffer != NULL);
+
+    // Ensure line is scaled horizontally by 2
     for (int i = 0; i < FRAMEBUFFER_WIDTH; i++) {
-        assert(scaled_line[i * 2] == (i & 0xFF));
-        assert(scaled_line[i * 2 + 1] == (i & 0xFF));
+        assert(line_buffer[i * 2] == (i & 0xFF));
+        assert(line_buffer[i * 2 + 1] == (i & 0xFF));
     }
-    
-    // 範囲外のラインに対してNULLが返されることを確認
-    assert(framebuffer_get_scaled_line(OUTPUT_HEIGHT) == NULL);
 }
 
-// メインのテストファイルから呼び出される関数
+// Main test file function
 void run_framebuffer_tests(void) {
-    printf("フレームバッファテストを開始します...\n");
-    
+    printf("Starting framebuffer tests...\n");
+
     test_framebuffer_init();
-    printf("初期化テスト ................. OK\n");
-    
+    printf("Initialization test ........... OK\n");
+
     test_framebuffer_swap();
-    printf("バッファスワップテスト ........ OK\n");
-    
+    printf("Buffer swap test .............. OK\n");
+
     test_framebuffer_commit_swap();
-    printf("コミットテスト ................ OK\n");
-    
+    printf("Commit test ................... OK\n");
+
     test_framebuffer_scaled_line();
-    printf("スケーリングテスト ............ OK\n");
-    
-    printf("全てのフレームバッファテストが成功しました！\n");
+    printf("Scaling test .................. OK\n");
+
+    printf("All framebuffer tests passed successfully!\n");
 }

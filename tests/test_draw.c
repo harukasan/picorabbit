@@ -7,14 +7,14 @@
 
 void test_draw_background(void) {
     uint8_t *buffer = hw_get_buffer();
-    
-    // 黒背景のテスト
+
+    // Test black background
     draw_background(buffer, 320, 240, COLOR_BLACK);
     for (int i = 0; i < 320 * 240; i++) {
         assert(buffer[i] == COLOR_BLACK);
     }
-    
-    // 白背景のテスト
+
+    // Test white background
     draw_background(buffer, 320, 240, COLOR_WHITE);
     for (int i = 0; i < 320 * 240; i++) {
         assert(buffer[i] == COLOR_WHITE);
@@ -23,21 +23,21 @@ void test_draw_background(void) {
 
 void test_draw_rect(void) {
     uint8_t *buffer = hw_get_buffer();
-    
-    // バッファをクリア
+
+    // Clear buffer
     draw_background(buffer, 320, 240, COLOR_BLACK);
-    
-    // 矩形を描画
+
+    // Draw rectangle
     draw_rect(buffer, 320, 240, 10, 10, 20, 20, COLOR_RED);
-    
-    // 矩形の内部が正しく塗られているか確認
+
+    // Verify rectangle interior is filled correctly
     for (int y = 10; y < 30; y++) {
         for (int x = 10; x < 30; x++) {
             assert(buffer[y * 320 + x] == COLOR_RED);
         }
     }
-    
-    // 矩形の外側が変更されていないか確認
+
+    // Verify area outside rectangle is unchanged
     assert(buffer[0] == COLOR_BLACK);
     assert(buffer[320 * 240 - 1] == COLOR_BLACK);
 }
@@ -55,13 +55,13 @@ static uint8_t test_character[FONT_HEIGHT * FONT_WIDTH] = {
 
 void test_draw_text(void) {
     uint8_t *buffer = hw_get_buffer();
-    
-    // バッファをクリア
+
+    // Clear buffer
     draw_background(buffer, 320, 240, COLOR_BLACK);
-    
-    // テキストを描画
+
+    // Draw text
     draw_text(buffer, 320, 240, 10, 10, "AAA", COLOR_WHITE);
-    
+
     bool assert_failed = false;
     for (int i = 0; i < 3; i++) {
         for (int y = 0; y < FONT_HEIGHT; y++) {
@@ -75,17 +75,17 @@ void test_draw_text(void) {
         }
     }
     assert(!assert_failed);
-} 
+}
 
 void test_draw_text_fast(void) {
     uint8_t *buffer = hw_get_buffer();
-    
-    // バッファをクリア
+
+    // Clear buffer
     draw_background(buffer, 320, 240, COLOR_BLACK);
-    
-    // テキストを描画
+
+    // Draw text
     draw_text_fast(buffer, 320, 240, 10, 10, "AAA", COLOR_WHITE);
-    
+
     bool assert_failed = false;
     for (int i = 0; i < 3; i++) {
         for (int y = 0; y < FONT_HEIGHT; y++) {
@@ -99,4 +99,4 @@ void test_draw_text_fast(void) {
         }
     }
     assert(!assert_failed);
-} 
+}

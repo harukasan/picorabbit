@@ -2,6 +2,7 @@ puts "Hello, world!"
 
 include PicoRabbit::Draw
 
+i = 0
 loop do
 	line_y = 0
 	while line_y < 480
