@@ -28,7 +28,7 @@ mrb_draw_rect(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
-mrb_draw_text_with_color(mrb_state *mrb, mrb_value self)
+mrb_draw_text(mrb_state *mrb, mrb_value self)
 {
     mrb_value str;
     mrb_int x, y, color;
@@ -45,6 +45,7 @@ mrb_draw_text_with_color(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_commit(mrb_state *mrb, mrb_value self)
 {
+    printf("commit\n");
     framebuffer_commit();
     return mrb_nil_value();
 }
@@ -57,10 +58,10 @@ mrb_mruby_picorabbit_draw_gem_init(mrb_state *mrb)
 
     mrb_define_module_function(mrb, module_draw, "background", mrb_background, MRB_ARGS_REQ(1));
     mrb_define_module_function(mrb, module_draw, "draw_rect", mrb_draw_rect, MRB_ARGS_REQ(5));
+    mrb_define_module_function(mrb, module_draw, "draw_text", mrb_draw_text, MRB_ARGS_REQ(4));
 
     mrb_define_module_function(mrb, module_draw, "commit", mrb_commit, MRB_ARGS_NONE());
 
-    mrb_define_module_function(mrb, module_draw, "_c_draw_text_with_color", mrb_draw_text_with_color, MRB_ARGS_REQ(4));
 
 }
 

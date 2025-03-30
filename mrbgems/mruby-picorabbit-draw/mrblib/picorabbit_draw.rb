@@ -15,8 +15,5 @@ module PicoRabbit
     COLOR_CYAN   = 0x1F
     COLOR_MAGENTA = 0xE3
 
-    def draw_text(str)
-      _c_draw_text_with_color(str.to_s, 0, 0, COLOR_WHITE)
-    end
   end
 end

@@ -46,6 +46,12 @@
         "clocks.h": "c",
         "draw_text.h": "c",
         "cstdint": "c",
-        "dvi_defines.h": "c"
+        "dvi_defines.h": "c",
+        "main_task.h": "c",
+        "irep.h": "c",
+        "draw.h": "c",
+        "hardware_interface.h": "c",
+        "stdbool.h": "c",
+        "stdint.h": "c"
     }
 }

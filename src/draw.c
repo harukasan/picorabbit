@@ -47,7 +47,6 @@ void draw_text(uint8_t *buffer, int width, int height, int x, int y, const char 
                 int px = char_x + i;
                 if (px < 0 || px >= width) continue;
 
-                // ビット順は LSB→MSB と仮定
                 if (bits & (1 << i)) {
                     buffer[py * width + px] = color;
                 }

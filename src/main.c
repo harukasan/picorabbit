@@ -19,7 +19,7 @@
 // Core 1: DVI output and line buffer management
 void core1_main() {
     init_clock();
-    sleep_ms(1000);
+    sleep_ms(500);
     framebuffer_init();
     dvi_start();
 }
@@ -47,22 +47,24 @@ void core0_main() {
     while (!framebuffer_wait_ready()) {
         tight_loop_contents();
     }
+    printf("framebuffer ready\n");
 
     // Wait for DVI to start
     dvi_wait_for_transfer();
+    printf("dvi transfer started\n");
 
     // Load main task first to define the render function
-    // mrb_load_irep(mrb, main_task);
+    mrb_value ret = mrb_load_irep(mrb, main_task);
+    if (mrb->exc) {
+        printf("mruby execution failed:\n");
+        mrb_print_error(mrb);
+    }
 
     // Draw red screen
-    uint16_t current_line = 0;
     while (true) {
         uint8_t* back_buffer = framebuffer_get_draw();
-        memset(back_buffer, COLOR_RED, DVI_H_ACTIVE);
-
-        // Draw text
-        draw_text(back_buffer, DVI_H_ACTIVE, current_line, 10, 10, "Hello from C", COLOR_WHITE);
-
+        draw_background(back_buffer, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, COLOR_RED);
+        draw_text(back_buffer, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, 0, 8, "mruby execution failed!", COLOR_WHITE);
         framebuffer_commit();
     }
 
