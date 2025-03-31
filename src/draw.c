@@ -32,6 +32,9 @@ void draw_rect(uint8_t *buffer, int x, int y, int width, int height, int color)
 // Draw text line
 void draw_text(uint8_t *buffer, int x, int y, const char *text, int color)
 {
+    x *= FRAMEBUFFER_PIXEL_WIDTH;
+    y *= FRAMEBUFFER_PIXEL_HEIGHT;
+
     if (y + FONT_HEIGHT <= 0 || y >= FRAMEBUFFER_HEIGHT || x >= FRAMEBUFFER_WIDTH)
     {
         return;
@@ -57,13 +60,14 @@ void draw_text(uint8_t *buffer, int x, int y, const char *text, int color)
             uint8_t bits = glyph[j];
             for (int i = 0; i < FONT_WIDTH; i++)
             {
-                int px = char_x + i;
+                int px = (char_x + i) * FRAMEBUFFER_PIXEL_WIDTH;
                 if (px < 0 || px >= FRAMEBUFFER_WIDTH)
                     continue;
 
                 if (bits & (1 << i))
                 {
                     buffer[py * FRAMEBUFFER_WIDTH + px] = color;
+                    buffer[py * FRAMEBUFFER_WIDTH + px + 1] = color;
                 }
             }
         }
