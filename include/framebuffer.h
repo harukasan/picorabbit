@@ -9,8 +9,11 @@
 // Display resolution configuration
 #define FRAMEBUFFER_WIDTH 640  // Internal buffer width
 #define FRAMEBUFFER_HEIGHT 240 // Internal buffer height
-#define DISPLAY_WIDTH 640       // Display width (2x scale)
-#define DISPLAY_HEIGHT 480      // Display height (2x scale)
+#define DISPLAY_WIDTH 640      // Display width (2x scale)
+#define DISPLAY_HEIGHT 480     // Display height (2x scale)
+
+#define FRAMEBUFFER_PIXEL_WIDTH 2  // Pixel width in the framebuffer
+#define FRAMEBUFFER_PIXEL_HEIGHT 1 // Pixel height in the framebuffer (1:2 vertical scale on display)
 
 // Frame buffer structure
 typedef struct
