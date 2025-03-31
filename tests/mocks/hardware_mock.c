@@ -1,5 +1,6 @@
 #ifdef PICO_DESKTOP_TEST
 
+#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -17,6 +18,7 @@ static int fifo_write_pos = 0;
 
 void hw_init(void) {
     memset(display_buffer, 0, BUFFER_SIZE);
+    memset(fifo_buffer, 0, sizeof(fifo_buffer));
     fifo_read_pos = 0;
     fifo_write_pos = 0;
 }
@@ -33,16 +35,23 @@ void hw_update_display(void) {
 void multicore_fifo_push_blocking(uint32_t data) {
     fifo_buffer[fifo_write_pos] = data;
     fifo_write_pos = (fifo_write_pos + 1) % 16;
+    printf("+ (mock) multicore_fifo_push_blocking: %d\n", data);
 }
 
 uint32_t multicore_fifo_pop_blocking(void) {
     uint32_t data = fifo_buffer[fifo_read_pos];
     fifo_read_pos = (fifo_read_pos + 1) % 16;
+    printf("+ (mock) multicore_fifo_pop_blocking: %d\n", data);
     return data;
 }
 
 bool multicore_fifo_rvalid(void) {
-    return fifo_read_pos != fifo_write_pos;
+    if (fifo_read_pos != fifo_write_pos) {
+        printf("+ (mock) multicore_fifo_rvalid: true\n");
+        return true;
+    }
+    printf("+ (mock) multicore_fifo_rvalid: false\n");
+    return false;
 }
 
 uint32_t get_core_num(void) {

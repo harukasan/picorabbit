@@ -7,4 +7,3 @@ assert('PicoRabbit::draw_slide') do
   val = TextBuf.get(2, 5)
   assert_equal '*'.ord | (6 << 8), val
 end
-  

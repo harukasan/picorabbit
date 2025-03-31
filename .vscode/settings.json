@@ -45,6 +45,7 @@
         "stdlib.h": "c",
         "clocks.h": "c",
         "draw_text.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "hardware_interface.h": "c"
     }
 }
