@@ -2,6 +2,7 @@
 #include <mruby.h>
 #include <mruby/string.h>
 
+#include "../../../include/framebuffer.h"
 #include "../../../include/draw.h"
 
 static mrb_value

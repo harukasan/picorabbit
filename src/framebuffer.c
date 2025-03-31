@@ -13,8 +13,8 @@ static uint8_t framebuffer_buffers[2][FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT];
 void framebuffer_init(void)
 {
     memset(&framebuffer, 0, sizeof(framebuffer));
-    draw_background(framebuffer_buffers[0], FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, COLOR_WHITE);
-    draw_background(framebuffer_buffers[1], FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, COLOR_WHITE);
+    draw_background(framebuffer_buffers[0], COLOR_WHITE);
+    draw_background(framebuffer_buffers[1], COLOR_WHITE);
 
     framebuffer.current_display_buffer = 0;
 
