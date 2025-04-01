@@ -17,7 +17,8 @@
 #include "main_task.h"
 
 // Core 1: DVI output and line buffer management
-void core1_main() {
+void core1_main()
+{
     init_clock();
     sleep_ms(500);
     framebuffer_init();
@@ -25,14 +26,16 @@ void core1_main() {
 }
 
 // Core 0: Line generation and LED control
-void core0_main() {
+void core0_main()
+{
     const uint LED_PIN = PICO_DEFAULT_LED_PIN;
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
     // Initialize mruby VM
     mrb_state *mrb = mrb_open();
-    if (!mrb) {
+    if (!mrb)
+    {
         printf("Failed to open mrb\n");
         return;
     }
@@ -44,7 +47,8 @@ void core0_main() {
     mrb_sym method = mrb_intern_lit(mrb, "render");
 
     // Wait for line buffer to be ready
-    while (!framebuffer_wait_ready()) {
+    while (!framebuffer_wait_ready())
+    {
         tight_loop_contents();
     }
     printf("framebuffer ready\n");
@@ -55,23 +59,25 @@ void core0_main() {
 
     // Load main task first to define the render function
     mrb_value ret = mrb_load_irep(mrb, main_task);
-    if (mrb->exc) {
+    if (mrb->exc)
+    {
         printf("mruby execution failed:\n");
         mrb_print_error(mrb);
-    }
-
-    // Draw red screen
-    while (true) {
-        uint8_t* back_buffer = framebuffer_get_draw();
-        draw_background(back_buffer, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, COLOR_RED);
-        draw_text(back_buffer, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, 0, 8, "mruby execution failed!", COLOR_WHITE);
-        framebuffer_commit();
+        while (true)
+        {
+            uint8_t *back_buffer = framebuffer_get_draw();
+            draw_background(back_buffer, COLOR_RED);
+            draw_text(back_buffer, 0, 8, "mruby execution failed!", COLOR_WHITE);
+            framebuffer_commit();
+            tight_loop_contents();
+        }
     }
 
     mrb_close(mrb);
 }
 
-int main() {
+int main()
+{
     // Configure voltage for high-speed operation
     vreg_set_voltage(VREG_VOLTAGE_1_30);
     sleep_ms(100);

@@ -36,11 +36,11 @@
 #define SYNC_V1_H0 (TMDS_CTRL_10 | (TMDS_CTRL_00 << 10) | (TMDS_CTRL_00 << 20))
 #define SYNC_V1_H1 (TMDS_CTRL_11 | (TMDS_CTRL_00 << 10) | (TMDS_CTRL_00 << 20))
 
-#define HSTX_CMD_RAW         (0x0u << 12)
-#define HSTX_CMD_RAW_REPEAT  (0x1u << 12)
-#define HSTX_CMD_TMDS        (0x2u << 12)
+#define HSTX_CMD_RAW (0x0u << 12)
+#define HSTX_CMD_RAW_REPEAT (0x1u << 12)
+#define HSTX_CMD_TMDS (0x2u << 12)
 #define HSTX_CMD_TMDS_REPEAT (0x3u << 12)
-#define HSTX_CMD_NOP         (0xfu << 12)
+#define HSTX_CMD_NOP (0xfu << 12)
 
 // ----------------------------------------------------------------------------
 // HSTX command lists
@@ -49,41 +49,38 @@
 // pingponging and tripping up the IRQs.
 
 static uint32_t vblank_line_vsync_off[] = {
-	HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
-	SYNC_V1_H1,
-//	HSTX_CMD_NOP,
-	HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
-	SYNC_V1_H0,
-//	HSTX_CMD_NOP,
-	HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
-	SYNC_V1_H1,
-//	HSTX_CMD_NOP,
-	HSTX_CMD_NOP
-};
+    HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
+    SYNC_V1_H1,
+    //	HSTX_CMD_NOP,
+    HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
+    SYNC_V1_H0,
+    //	HSTX_CMD_NOP,
+    HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
+    SYNC_V1_H1,
+    //	HSTX_CMD_NOP,
+    HSTX_CMD_NOP};
 
 static uint32_t vblank_line_vsync_on[] = {
-	HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
-	SYNC_V0_H1,
-//	HSTX_CMD_NOP,
-	HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
-	SYNC_V0_H0,
-//	HSTX_CMD_NOP,
-	HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
-	SYNC_V0_H1,
-	HSTX_CMD_NOP
-};
+    HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
+    SYNC_V0_H1,
+    //	HSTX_CMD_NOP,
+    HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
+    SYNC_V0_H0,
+    //	HSTX_CMD_NOP,
+    HSTX_CMD_RAW_REPEAT | (DVI_H_BACK_PORCH + DVI_H_ACTIVE),
+    SYNC_V0_H1,
+    HSTX_CMD_NOP};
 
 static uint32_t vactive_line[] = {
-	HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
-	SYNC_V1_H1,
-	HSTX_CMD_NOP,
-	HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
-	SYNC_V1_H0,
-	HSTX_CMD_NOP,
-	HSTX_CMD_RAW_REPEAT | DVI_H_BACK_PORCH,
-	SYNC_V1_H1,
-	HSTX_CMD_TMDS		| DVI_H_ACTIVE
-};
+    HSTX_CMD_RAW_REPEAT | DVI_H_FRONT_PORCH,
+    SYNC_V1_H1,
+    HSTX_CMD_NOP,
+    HSTX_CMD_RAW_REPEAT | DVI_H_SYNC,
+    SYNC_V1_H0,
+    HSTX_CMD_NOP,
+    HSTX_CMD_RAW_REPEAT | DVI_H_BACK_PORCH,
+    SYNC_V1_H1,
+    HSTX_CMD_TMDS | DVI_H_ACTIVE};
 
 // ----------------------------------------------------------------------------
 // DMA logic
@@ -103,77 +100,76 @@ static uint v_scanline = 0;
 static bool vactive_cmdlist_posted = false;
 
 // Wait for DMA transfer completion
-void dvi_wait_for_transfer() {
+void dvi_wait_for_transfer()
+{
     // Wait for PING DMA channel to be idle
-    while (dma_channel_is_busy(DMACH_PING)) {
+    while (dma_channel_is_busy(DMACH_PING))
+    {
         tight_loop_contents();
     }
 }
 
 static uint8_t line_buffer[2][DVI_H_ACTIVE];
 
-static uint8_t line_buffer_half[320];
-
-static uint16_t expand_table[256];
-
-static void init_expand_table(void) {
-    for (int c = 0; c < 256; c++) {
-        expand_table[c] = (uint16_t)((c << 8) | c);
-    }
-}
-
-void __scratch_x("") dma_irq_handler() {
+void __scratch_x("") dma_irq_handler()
+{
     uint ch_num = dma_pong ? DMACH_PONG : DMACH_PING;
     dma_channel_hw_t *ch = &dma_hw->ch[ch_num];
     dma_hw->intr = 1u << ch_num;
     dma_pong = !dma_pong;
 
-    if (v_scanline >= DVI_V_FRONT_PORCH && v_scanline < (DVI_V_FRONT_PORCH + DVI_V_SYNC)) {
+    if (v_scanline >= DVI_V_FRONT_PORCH && v_scanline < (DVI_V_FRONT_PORCH + DVI_V_SYNC))
+    {
         // Vsync on
         ch->read_addr = (uintptr_t)vblank_line_vsync_on;
         ch->transfer_count = count_of(vblank_line_vsync_on);
-    } else if (v_scanline < DVI_V_FRONT_PORCH + DVI_V_SYNC + DVI_V_BACK_PORCH) {
+    }
+    else if (v_scanline < DVI_V_FRONT_PORCH + DVI_V_SYNC + DVI_V_BACK_PORCH)
+    {
         // Vsync off
         ch->read_addr = (uintptr_t)vblank_line_vsync_off;
         ch->transfer_count = count_of(vblank_line_vsync_off);
-    } else if (!vactive_cmdlist_posted) {
+    }
+    else if (!vactive_cmdlist_posted)
+    {
         // H Blank
         ch->read_addr = (uintptr_t)vactive_line;
         ch->transfer_count = count_of(vactive_line);
         vactive_cmdlist_posted = true;
-    } else {
+    }
+    else
+    {
         // Calculate the offset into the frame buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        frame_buffer_get_scaled_line(line_buffer[dma_pong], line);
-        const uint8_t* line_data = line_buffer[dma_pong];
+        framebuffer_get_line(line_buffer[dma_pong], line);
+        const uint8_t *line_data = line_buffer[dma_pong];
         ch->read_addr = (uintptr_t)line_data;
         ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
         vactive_cmdlist_posted = false;
 
         // Swap line buffers after reading
-        if (line == DVI_V_ACTIVE - 1) {
+        if (line == DVI_V_ACTIVE - 1)
+        {
             framebuffer_swap();
         }
     }
 
-    if (!vactive_cmdlist_posted) {
+    if (!vactive_cmdlist_posted)
+    {
         v_scanline = (v_scanline + 1) % DVI_V_TOTAL;
     }
 }
 
-
 // Start DVI output
-void dvi_start() {
-    init_expand_table();
-    memset(line_buffer_half, 0x1C, sizeof(line_buffer_half));
-
+void dvi_start()
+{
     // Configure HSTX's TMDS encoder for RGB332
     hstx_ctrl_hw->expand_tmds =
-        2  << HSTX_CTRL_EXPAND_TMDS_L2_NBITS_LSB |
-        0  << HSTX_CTRL_EXPAND_TMDS_L2_ROT_LSB   |
-        2  << HSTX_CTRL_EXPAND_TMDS_L1_NBITS_LSB |
-        29 << HSTX_CTRL_EXPAND_TMDS_L1_ROT_LSB   |
-        1  << HSTX_CTRL_EXPAND_TMDS_L0_NBITS_LSB |
+        2 << HSTX_CTRL_EXPAND_TMDS_L2_NBITS_LSB |
+        0 << HSTX_CTRL_EXPAND_TMDS_L2_ROT_LSB |
+        2 << HSTX_CTRL_EXPAND_TMDS_L1_NBITS_LSB |
+        29 << HSTX_CTRL_EXPAND_TMDS_L1_ROT_LSB |
+        1 << HSTX_CTRL_EXPAND_TMDS_L0_NBITS_LSB |
         26 << HSTX_CTRL_EXPAND_TMDS_L0_ROT_LSB;
 
     // Pixels (TMDS) come in 4 8-bit chunks. Control symbols (RAW) are an
@@ -209,7 +205,8 @@ void dvi_start() {
     // Assign clock pair to two neighbouring pins:
     hstx_ctrl_hw->bit[2] = HSTX_CTRL_BIT0_CLK_BITS;
     hstx_ctrl_hw->bit[3] = HSTX_CTRL_BIT0_CLK_BITS | HSTX_CTRL_BIT0_INV_BITS;
-    for (uint lane = 0; lane < 3; ++lane) {
+    for (uint lane = 0; lane < 3; ++lane)
+    {
         // For each TMDS lane, assign it to the correct GPIO pair based on the
         // desired pinout:
         static const int lane_to_output_bit[3] = {0, 6, 4};
@@ -217,14 +214,15 @@ void dvi_start() {
         // Output even bits during first half of each HSTX cycle, and odd bits
         // during second half. The shifter advances by two bits each cycle.
         uint32_t lane_data_sel_bits =
-            (lane * 10    ) << HSTX_CTRL_BIT0_SEL_P_LSB |
+            (lane * 10) << HSTX_CTRL_BIT0_SEL_P_LSB |
             (lane * 10 + 1) << HSTX_CTRL_BIT0_SEL_N_LSB;
         // The two halves of each pair get identical data, but one pin is inverted.
-        hstx_ctrl_hw->bit[bit    ] = lane_data_sel_bits;
+        hstx_ctrl_hw->bit[bit] = lane_data_sel_bits;
         hstx_ctrl_hw->bit[bit + 1] = lane_data_sel_bits | HSTX_CTRL_BIT0_INV_BITS;
     }
 
-    for (int i = 12; i <= 19; ++i) {
+    for (int i = 12; i <= 19; ++i)
+    {
         gpio_set_function(i, 0); // HSTX
     }
 
@@ -242,8 +240,7 @@ void dvi_start() {
         &hstx_fifo_hw->fifo,
         vblank_line_vsync_off,
         count_of(vblank_line_vsync_off),
-        false
-    );
+        false);
     c = dma_channel_get_default_config(DMACH_PONG);
     channel_config_set_chain_to(&c, DMACH_PING);
     channel_config_set_dreq(&c, DREQ_HSTX);
@@ -253,8 +250,7 @@ void dvi_start() {
         &hstx_fifo_hw->fifo,
         vblank_line_vsync_off,
         count_of(vblank_line_vsync_off),
-        false
-    );
+        false);
 
     dma_hw->ints0 = (1u << DMACH_PING) | (1u << DMACH_PONG);
     dma_hw->inte0 = (1u << DMACH_PING) | (1u << DMACH_PONG);
@@ -266,4 +262,3 @@ void dvi_start() {
     dma_channel_start(DMACH_PING);
     printf("dvi output started\n");
 }
-

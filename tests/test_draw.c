@@ -100,3 +100,25 @@ void test_draw_text_fast(void) {
     }
     assert(!assert_failed);
 }
+
+void run_draw_tests(void) {
+    printf("== run_draw_tests\n");
+
+    printf("=== ↓ test_draw_background\n");
+    test_draw_background();
+    printf("=== ↑ test_draw_background ........... OK\n");
+
+    printf("=== ↓ test_draw_rect\n");
+    test_draw_rect();
+    printf("=== ↑ test_draw_rect ................. OK\n");
+
+    printf("=== ↓ test_draw_text\n");
+    test_draw_text();
+    printf("=== ↑ test_draw_text ................. OK\n");
+
+    printf("=== ↓ test_draw_text_fast\n");
+    test_draw_text_fast();
+    printf("=== ↑ test_draw_text_fast ............ OK\n");
+
+    printf("== run_draw_tests .................... OK\n");
+}

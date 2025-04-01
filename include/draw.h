@@ -15,9 +15,9 @@
 #define COLOR_CYAN 0x1F
 #define COLOR_MAGENTA 0xE3
 
-void draw_background(uint8_t *buffer, int buffer_width, int buffer_height, int color);
-void draw_rect(uint8_t *buffer, int buffer_width, int buffer_height, int x, int y, int width, int height, int color);
-void draw_text(uint8_t *buffer, int buffer_width, int buffer_height, int x, int y, const char *text, int color);
-void draw_text_fast(uint8_t *buffer, int buffer_width, int buffer_height, int x, int y, const char *text, int color);
+void draw_background(uint8_t *buffer, int color);
+void draw_rect(uint8_t *buffer, int x, int y, int width, int height, int color);
+void draw_text(uint8_t *buffer, int x, int y, const char *text, int color);
+void draw_text_fast(uint8_t *buffer, int x, int y, const char *text, int color);
 
 #endif

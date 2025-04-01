@@ -7,7 +7,9 @@
 // Prototype declaration for test helper functions
 extern void mock_set_core(uint32_t core_num);
 
-void test_framebuffer_init(void) {
+void test_framebuffer_init(void)
+{
+    hw_init();
     framebuffer_init();
 
     // After initialization, display buffer should be 0
@@ -20,7 +22,9 @@ void test_framebuffer_init(void) {
     assert(draw_buffer != display_buffer);
 }
 
-void test_framebuffer_swap(void) {
+void test_framebuffer_swap(void)
+{
+    hw_init();
     framebuffer_init();
     framebuffer_wait_ready();
 
@@ -43,9 +47,10 @@ void test_framebuffer_swap(void) {
     assert(new_draw == initial_draw);
 }
 
-void test_framebuffer_commit_swap(void) {
+void test_framebuffer_commit_swap(void)
+{
     framebuffer_init();
-    mock_set_core(0);  // Run as Core 0
+    framebuffer_wait_ready();
 
     // Save state before commit
     const uint8_t *initial_display = framebuffer_get_display();
@@ -64,46 +69,58 @@ void test_framebuffer_commit_swap(void) {
     assert(new_draw == initial_display);
 }
 
-void test_framebuffer_scaled_line(void) {
+void test_framebuffer_get_line(void)
+{
     framebuffer_init();
+    framebuffer_wait_ready();
 
     // Draw test pattern
     uint8_t *draw_buffer = framebuffer_get_draw();
-    for (int i = 0; i < FRAMEBUFFER_WIDTH; i++) {
-        draw_buffer[i] = i & 0xFF;
+    for (int j = 0; j < FRAMEBUFFER_HEIGHT; j++)
+    {
+        for (int i = 0; i < FRAMEBUFFER_WIDTH; i++)
+        {
+            draw_buffer[j * FRAMEBUFFER_WIDTH + i] = (i + j) & 0xFF;
+        }
     }
 
     framebuffer_commit();
     framebuffer_swap();
 
     // Get scaled line and verify
-    uint16_t line_buffer[FRAMEBUFFER_WIDTH];
-    frame_buffer_get_scaled_line(line_buffer, 0);
-
-    assert(line_buffer != NULL);
-
-    // Ensure line is scaled horizontally by 2
-    for (int i = 0; i < FRAMEBUFFER_WIDTH; i++) {
-        assert(line_buffer[i * 2] == (i & 0xFF));
-        assert(line_buffer[i * 2 + 1] == (i & 0xFF));
+    uint8_t line_buffer[FRAMEBUFFER_WIDTH];
+    for (int j = 0; j < DISPLAY_HEIGHT; j++)
+    {
+        framebuffer_get_line(line_buffer, j);
+        assert(line_buffer != NULL);
+        for (int i = 0; i < FRAMEBUFFER_WIDTH; i++)
+        {
+            int line = j / 2;
+            assert(line_buffer[i] == ((i + line) & 0xFF));
+        }
     }
 }
 
 // Main test file function
-void run_framebuffer_tests(void) {
-    printf("Starting framebuffer tests...\n");
+void run_framebuffer_tests(void)
+{
+    printf("== run_framebuffer_tests\n");
 
+    printf("=== ↓ test_framebuffer_init\n");
     test_framebuffer_init();
-    printf("Initialization test ........... OK\n");
+    printf("=== ↑ test_framebuffer_init ........... OK\n");
 
+    printf("=== ↓ test_framebuffer_swap\n");
     test_framebuffer_swap();
-    printf("Buffer swap test .............. OK\n");
+    printf("=== ↑ test_framebuffer_swap ........... OK\n");
 
+    printf("=== ↓ test_framebuffer_commit_swap\n");
     test_framebuffer_commit_swap();
-    printf("Commit test ................... OK\n");
+    printf("=== ↑ test_framebuffer_commit_swap .... OK\n");
 
-    test_framebuffer_scaled_line();
-    printf("Scaling test .................. OK\n");
+    printf("=== ↓ test_framebuffer_get_line\n");
+    test_framebuffer_get_line();
+    printf("=== ↑ test_framebuffer_get_line ....... OK\n");
 
-    printf("All framebuffer tests passed successfully!\n");
+    printf("== run_framebuffer_tests ............ OK\n");
 }
