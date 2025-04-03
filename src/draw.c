@@ -87,7 +87,7 @@ void draw_text_fast(uint8_t *buffer, int x, int y, const char *text, int color)
     for (int i = 0; text[i] != '\0'; i++)
     {
         const uint8_t *glyph = (uint8_t *)font8x8_basic[(uint8_t)text[i]];
-        int base_x = x + i * FONT_WIDTH;
+        int base_x = (x + i * FONT_WIDTH) * FRAMEBUFFER_PIXEL_WIDTH;
 
         for (int dy = 0; dy < FONT_HEIGHT; dy++)
         {
@@ -96,9 +96,11 @@ void draw_text_fast(uint8_t *buffer, int x, int y, const char *text, int color)
 
             for (int dx = 0; dx < FONT_WIDTH; dx++)
             {
+                int px = dx * FRAMEBUFFER_PIXEL_WIDTH;
                 if (bits & (1 << dx))
                 {
-                    dst[dx] = color;
+                    dst[px] = color;
+                    dst[px + 1] = color;
                 }
             }
         }
