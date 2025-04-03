@@ -15,6 +15,11 @@ void draw_background(uint8_t *buffer, int color)
 // Draw rectangle
 void draw_rect(uint8_t *buffer, int x, int y, int width, int height, int color)
 {
+    x *= FRAMEBUFFER_PIXEL_WIDTH;
+    y *= FRAMEBUFFER_PIXEL_HEIGHT;
+    width *= FRAMEBUFFER_PIXEL_WIDTH;
+    height *= FRAMEBUFFER_PIXEL_HEIGHT;
+
     // Boundary check
     if (x < 0 || y < 0 || x >= FRAMEBUFFER_WIDTH || y >= FRAMEBUFFER_HEIGHT)
     {
@@ -23,6 +28,7 @@ void draw_rect(uint8_t *buffer, int x, int y, int width, int height, int color)
 
     int draw_width = (x + width > FRAMEBUFFER_WIDTH) ? FRAMEBUFFER_WIDTH - x : width;
     int draw_height = (y + height > FRAMEBUFFER_HEIGHT) ? FRAMEBUFFER_HEIGHT - y : height;
+
     for (int j = 0; j < draw_height; j++)
     {
         memset(&buffer[(y + j) * FRAMEBUFFER_WIDTH + x], color, draw_width);
@@ -74,6 +80,7 @@ void draw_text(uint8_t *buffer, int x, int y, const char *text, int color)
     }
 }
 
+// FIXME: Apply for 2:1 scaling
 // Draw text line faster (skips coordinate checks)
 void draw_text_fast(uint8_t *buffer, int x, int y, const char *text, int color)
 {
