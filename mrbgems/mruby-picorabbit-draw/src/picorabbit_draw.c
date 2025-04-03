@@ -5,6 +5,8 @@
 #include "../../../include/framebuffer.h"
 #include "../../../include/draw.h"
 
+#include "../include/picorabbit_textbuf.h"
+
 static mrb_value
 mrb_background(mrb_state *mrb, mrb_value self)
 {
@@ -20,7 +22,7 @@ static mrb_value
 mrb_draw_rect(mrb_state *mrb, mrb_value self)
 {
     mrb_int x, y, width, height, color;
-    mrb_get_args(mrb, "iiii", &x, &y, &width, &height, &color);
+    mrb_get_args(mrb, "iiiii", &x, &y, &width, &height, &color);
 
     draw_rect(framebuffer_get_draw(), x, y, width, height, color);
 
@@ -49,6 +51,10 @@ mrb_commit(mrb_state *mrb, mrb_value self)
     return mrb_nil_value();
 }
 
+void mrb_mruby_picorabbit_draw_gem_init_draw(mrb_state *mrb, struct RClass *module_picorabbit)
+{
+}
+
 void mrb_mruby_picorabbit_draw_gem_init(mrb_state *mrb)
 {
     struct RClass *module_picorabbit = mrb_define_module(mrb, "PicoRabbit");
@@ -57,8 +63,11 @@ void mrb_mruby_picorabbit_draw_gem_init(mrb_state *mrb)
     mrb_define_module_function(mrb, module_draw, "background", mrb_background, MRB_ARGS_REQ(1));
     mrb_define_module_function(mrb, module_draw, "draw_rect", mrb_draw_rect, MRB_ARGS_REQ(5));
     mrb_define_module_function(mrb, module_draw, "draw_text", mrb_draw_text_with_color, MRB_ARGS_REQ(4));
-
     mrb_define_module_function(mrb, module_draw, "commit", mrb_commit, MRB_ARGS_NONE());
+
+    mrb_mruby_picorabbit_draw_gem_init_textbuf(mrb, module_draw);
 }
 
-void mrb_mruby_picorabbit_draw_gem_final(mrb_state *mrb) {}
+void mrb_mruby_picorabbit_draw_gem_final(mrb_state *mrb) {
+    mrb_mruby_picorabbit_draw_gem_final_textbuf(mrb);
+}
