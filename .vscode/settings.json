@@ -47,6 +47,7 @@
         "draw_text.h": "c",
         "cstdint": "c",
         "hardware_interface.h": "c",
-        "draw.h": "c"
+        "draw.h": "c",
+        "pico_time.h": "c"
     }
 }

@@ -31,6 +31,7 @@ MRuby::CrossBuild.new("picorabbit-mruby-cortex-m33") do |conf|
 
   conf.gem File.join(local_gems_dir, "mruby-pico-print")
   conf.gem File.join(local_gems_dir, "mruby-picorabbit-draw")
+  conf.gem File.join(local_gems_dir, "mruby-pico-time")
   conf.gem File.join(mrubygems_dir, "mruby-compiler")
 
 end
