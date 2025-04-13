@@ -2,7 +2,9 @@
 #define DVI_TIMING_640x480P_H
 
 // DVI timing constants for 480p60 (640x480@60Hz)
-// Reference: CEA-861-D specification
+// Reference: CEA-861
+// https://tomverbeure.github.io/video_timings_calculator
+
 #define DVI_H_ACTIVE        640
 #define DVI_H_FRONT_PORCH   16
 #define DVI_H_SYNC          96

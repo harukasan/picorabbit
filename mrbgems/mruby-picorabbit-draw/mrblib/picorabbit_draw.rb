@@ -31,5 +31,16 @@ module PicoRabbit
       end
     end
 
+    Slide = Struct.new(:elements)
+    TextElement = Struct.new(:text, :x, :y, :color)
+
+    def draw_slide(slide)
+      slide.elements.each do |e|
+        case e
+        when TextElement
+          draw_text(e.text, e.x, e.y, e.color)
+        end
+      end
+    end
   end
 end

@@ -38,10 +38,7 @@ void draw_rect(uint8_t *buffer, int x, int y, int width, int height, int color)
 // Draw text line
 void draw_text(uint8_t *buffer, int x, int y, const char *text, int color)
 {
-    x *= FRAMEBUFFER_PIXEL_WIDTH;
-    y *= FRAMEBUFFER_PIXEL_HEIGHT;
-
-    if (y + FONT_HEIGHT <= 0 || y >= FRAMEBUFFER_HEIGHT || x >= FRAMEBUFFER_WIDTH)
+    if (y + FONT_HEIGHT <= 0 || y >= FRAMEBUFFER_HEIGHT / FRAMEBUFFER_PIXEL_HEIGHT || x >= FRAMEBUFFER_WIDTH / FRAMEBUFFER_PIXEL_WIDTH)
     {
         return;
     }
