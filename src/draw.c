@@ -129,3 +129,39 @@ void draw_image(uint8_t *buffer, const uint8_t *image_data, int x, int y, int im
     }
 }
 
+// Draw image data with 1-bit per pixel transparency mask
+void draw_image_masked(uint8_t *buffer, const uint8_t *image_data, const uint8_t *mask_data, int x, int y, int image_width, int image_height) {
+    x *= FRAMEBUFFER_PIXEL_WIDTH;
+    y *= FRAMEBUFFER_PIXEL_HEIGHT;
+    int output_width = image_width * FRAMEBUFFER_PIXEL_WIDTH;
+    int output_height = image_height * FRAMEBUFFER_PIXEL_HEIGHT;
+
+    // Boundary check
+    if (x < 0 || y < 0 || x >= FRAMEBUFFER_WIDTH || y >= FRAMEBUFFER_HEIGHT) {
+        return;
+    }
+
+    int draw_width = (x + output_width > FRAMEBUFFER_WIDTH) ? FRAMEBUFFER_WIDTH - x : output_width;
+    int draw_height = (y + output_height > FRAMEBUFFER_HEIGHT) ? FRAMEBUFFER_HEIGHT - y : output_height;
+
+    for (int j = 0; j < draw_height; j++) {
+        for (int i = 0; i < draw_width; i++) {
+            int src_x = i / FRAMEBUFFER_PIXEL_WIDTH;
+            int src_y = j / FRAMEBUFFER_PIXEL_HEIGHT;
+            int src_idx = src_y * image_width + src_x;
+
+            // Calculate mask byte index and bit position
+            int mask_byte_idx = src_idx >> 3;    // Divide by 8 to get byte index
+            int mask_bit_pos = src_idx & 0x07;   // Modulo 8 to get bit position
+
+            // Skip pixel if it's transparent in the mask (bit = 0)
+            if (!(mask_data[mask_byte_idx] & (1 << mask_bit_pos))) {
+                continue;
+            }
+
+            int dst_idx = (y + j) * FRAMEBUFFER_WIDTH + (x + i);
+            buffer[dst_idx] = image_data[src_idx];
+        }
+    }
+}
+

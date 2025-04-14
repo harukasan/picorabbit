@@ -59,20 +59,39 @@ mrb_draw_image(mrb_state *mrb, mrb_value self)
     }
 
     const uint8_t *image_data = NULL;
+    const uint8_t *mask_data = NULL;
     const char *name = mrb_sym2name(mrb, mrb_symbol(image_name));
 
     int width = 0;
     int height = 0;
+    bool has_mask = false;
     if (strcmp(name, "rubykaigi2025") == 0) {
         image_data = image_data_rubykaigi2025;
+        has_mask = false;
         width = IMAGE_WIDTH_RUBYKAIGI2025;
         height = IMAGE_HEIGHT_RUBYKAIGI2025;
+    } else if (strcmp(name, "kame") == 0) {
+        image_data = image_data_kame;
+        mask_data = mask_data_kame;
+        has_mask = true;
+        width = IMAGE_WIDTH_KAME;
+        height = IMAGE_HEIGHT_KAME;
+    } else if (strcmp(name, "usagi") == 0) {
+        image_data = image_data_usagi;
+        mask_data = mask_data_usagi;
+        has_mask = true;
+        width = IMAGE_WIDTH_USAGI;
+        height = IMAGE_HEIGHT_USAGI;
     } else {
         mrb_raisef(mrb, E_ARGUMENT_ERROR, "unknown image name: %s", name);
         return mrb_nil_value();
     }
 
-    draw_image(framebuffer_get_draw(), image_data, x, y, width, height);
+    if (has_mask) {
+        draw_image_masked(framebuffer_get_draw(), image_data, mask_data, x, y, width, height);
+    } else {
+        draw_image(framebuffer_get_draw(), image_data, x, y, width, height);
+    }
 
     return mrb_nil_value();
 }
