@@ -45,6 +45,11 @@ void framebuffer_commit(void)
     multicore_fifo_push_blocking(msg.raw);
 }
 
+uint32_t framebuffer_get_addr(uint32_t line)
+{
+    return (uint32_t)&framebuffer_buffers[framebuffer.current_display_buffer][(line / 2) * FRAMEBUFFER_WIDTH];
+}
+
 void framebuffer_get_line(uint8_t *line_buffer, uint32_t line)
 {
     uint16_t *dst = (uint16_t *)line_buffer;

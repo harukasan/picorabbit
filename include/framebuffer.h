@@ -55,4 +55,7 @@ bool framebuffer_wait_ready(void);
 // Get a scaled scanline for DVI output
 void framebuffer_get_line(uint8_t *line_buffer, uint32_t line);
 
+// Get the address of the current display buffer
+uint32_t framebuffer_get_addr(uint32_t line);
+
 #endif // FRAME_BUFFER_H

@@ -164,3 +164,21 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 ```
+
+## include/images.h (images/rubykagi2025.png)
+
+This image was originally created by the RubyKaigi 2025 Team and is licensed
+under the Creative Commons Attribution 4.0 Unported License (CC BY 4.0).
+
+Original file:
+[RubyKaigi 2025 Graphics Kit/ogp/ogp.psd](https://rubykaigi.org/2025/goodies/)
+
+```
+This work by RubyKaigi 2025 Team is licensed under a Creative Commons Attribution 4.0 Unported License.
+```
+
+Changes Made:
+* Cropped and Scaled
+* Reduced color palette to RGB332
+
+For more information on the license, please visit: https://creativecommons.org/licenses/by/4.0/

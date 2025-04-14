@@ -109,8 +109,6 @@ void dvi_wait_for_transfer()
     }
 }
 
-static uint8_t line_buffer[2][DVI_H_ACTIVE];
-
 void __scratch_x("") dma_irq_handler()
 {
     uint ch_num = dma_pong ? DMACH_PONG : DMACH_PING;
@@ -141,22 +139,18 @@ void __scratch_x("") dma_irq_handler()
     {
         // Calculate the offset into the frame buffer for the current scanline
         uint32_t line = v_scanline - (DVI_V_TOTAL - DVI_V_ACTIVE);
-        framebuffer_get_line(line_buffer[dma_pong], line);
-        const uint8_t *line_data = line_buffer[dma_pong];
-        ch->read_addr = (uintptr_t)line_data;
+        ch->read_addr = framebuffer_get_addr(line);
         ch->transfer_count = DVI_H_ACTIVE / sizeof(uint32_t);
         vactive_cmdlist_posted = false;
-
-        // Swap line buffers after reading
-        if (line == DVI_V_ACTIVE - 1)
-        {
-            framebuffer_swap();
-        }
     }
 
     if (!vactive_cmdlist_posted)
     {
         v_scanline = (v_scanline + 1) % DVI_V_TOTAL;
+    }
+    if (v_scanline == 0)
+    {
+        framebuffer_swap();
     }
 }
 

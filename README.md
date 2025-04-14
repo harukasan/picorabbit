@@ -7,7 +7,7 @@ PicoRabbit is an experimental project to implement a presentation tool like [Rab
 - [x] DVI output using HSTX
 - [x] Buffering
 - [x] Text rendering
-- [ ] Paging/Transition
+- [x] Paging/Transition
 - [x] mruby integration
 - [ ] PicoRuby integration
 - [ ] USB MSC support

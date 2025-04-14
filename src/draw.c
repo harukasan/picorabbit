@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "draw.h"
 #include "framebuffer.h"
@@ -103,3 +104,28 @@ void draw_text_fast(uint8_t *buffer, int x, int y, const char *text, int color)
         }
     }
 }
+
+// Draw image data
+void draw_image(uint8_t *buffer, const uint8_t *image_data, int x, int y, int image_width, int image_height) {
+    x *= FRAMEBUFFER_PIXEL_WIDTH;
+    y *= FRAMEBUFFER_PIXEL_HEIGHT;
+    int output_width =  image_width * FRAMEBUFFER_PIXEL_WIDTH;
+    int output_height = image_height * FRAMEBUFFER_PIXEL_HEIGHT;
+
+    // Boundary check
+    if (x < 0 || y < 0 || x >= FRAMEBUFFER_WIDTH || y >= FRAMEBUFFER_HEIGHT) {
+        return;
+    }
+
+    int draw_width = (x + output_width > FRAMEBUFFER_WIDTH) ? FRAMEBUFFER_WIDTH - x : output_width;
+    int draw_height = (y + output_height > FRAMEBUFFER_HEIGHT) ? FRAMEBUFFER_HEIGHT - y : output_height;
+
+    for (int j = 0; j < draw_height; j++) {
+        for (int i = 0; i < draw_width; i++) {
+            int src_idx = (j / FRAMEBUFFER_PIXEL_HEIGHT) * image_width + (i / FRAMEBUFFER_PIXEL_WIDTH);
+            int dst_idx = (y + j) * FRAMEBUFFER_WIDTH + (x + i);
+            buffer[dst_idx] = image_data[src_idx];
+        }
+    }
+}
+

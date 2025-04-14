@@ -98,6 +98,11 @@ loop do
 
   draw_slide(slides[count])
 
+  if count == 0
+    draw_image :rubykaigi2025, 0, 0
+  end
+
+
   # draw_text "Hello, world!" + i.to_s, 0, 0, COLOR_WHITE
   kame_x = (elapsed / 1000) * (320-24)  / (300 * 1000)
   draw_rect kame_x, 240-24, 24, 24, COLOR_GREEN
