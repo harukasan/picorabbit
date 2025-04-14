@@ -84,8 +84,6 @@ int main()
 
     stdio_init_all();
 
-    printf("PicoRabbit DVI - RGB332 Text Test\n");
-
     // Launch core 1
     printf("\nStarting Core 1...\n");
     multicore_launch_core1(core1_main);
