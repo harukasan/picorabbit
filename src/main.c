@@ -40,12 +40,6 @@ void core0_main()
         return;
     }
 
-    // Call render function with line number
-    mrb_value args[1];
-    args[0] = mrb_fixnum_value(0); // line number
-    mrb_value self = mrb_top_self(mrb);
-    mrb_sym method = mrb_intern_lit(mrb, "render");
-
     // Wait for line buffer to be ready
     while (!framebuffer_wait_ready())
     {

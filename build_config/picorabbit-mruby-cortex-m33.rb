@@ -28,6 +28,7 @@ MRuby::CrossBuild.new("picorabbit-mruby-cortex-m33") do |conf|
 
   conf.gembox "stdlib"
   conf.gembox "stdlib-ext"
+  conf.gembox "math"
 
   conf.gem File.join(local_gems_dir, "mruby-pico-print")
   conf.gem File.join(local_gems_dir, "mruby-picorabbit-draw")

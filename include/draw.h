@@ -21,5 +21,7 @@ void draw_text(uint8_t *buffer, int x, int y, const char *text, int color);
 void draw_text_fast(uint8_t *buffer, int x, int y, const char *text, int color);
 void draw_image(uint8_t *buffer, const uint8_t *image_data, int x, int y, int width, int height);
 void draw_image_masked(uint8_t *buffer, const uint8_t *image_data, const uint8_t *mask_data, int x, int y, int width, int height);
+void draw_image_masked_rotated(uint8_t *buffer, const uint8_t *image_data, const uint8_t *mask_data, int x, int y, int width, int height, float angle_degrees);
+void draw_line(uint8_t *buffer, int x0, int y0, int x1, int y1, int color);
 
 #endif

@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 #include "draw.h"
 #include "framebuffer.h"
@@ -161,6 +163,113 @@ void draw_image_masked(uint8_t *buffer, const uint8_t *image_data, const uint8_t
 
             int dst_idx = (y + j) * FRAMEBUFFER_WIDTH + (x + i);
             buffer[dst_idx] = image_data[src_idx];
+        }
+    }
+}
+
+// Draw image data with 1-bit per pixel transparency mask and rotation
+void draw_image_masked_rotated(uint8_t *buffer, const uint8_t *image_data, const uint8_t *mask_data,
+                             int x, int y, int image_width, int image_height, float angle_degrees) {
+    x *= FRAMEBUFFER_PIXEL_WIDTH;
+    y *= FRAMEBUFFER_PIXEL_HEIGHT;
+    int base_width = image_width * FRAMEBUFFER_PIXEL_WIDTH;
+    int base_height = image_height * FRAMEBUFFER_PIXEL_HEIGHT;
+
+    // Convert angle to radians
+    float angle_rad = angle_degrees * 3.14159f / 180.0f;
+    float sin_angle = sinf(angle_rad);
+    float cos_angle = cosf(angle_rad);
+
+    // Calculate rotated dimensions for drawing area
+    int output_width = (int)((fabsf(base_width * cos_angle) + fabsf(base_height * sin_angle)) * FRAMEBUFFER_PIXEL_WIDTH) + 10;
+    int output_height = (int)((fabsf(base_width * sin_angle) + fabsf(base_height * cos_angle)) * FRAMEBUFFER_PIXEL_HEIGHT) + 10;
+
+    // Adjust for pixel aspect ratio (2:1)
+    float aspect_ratio = (float)FRAMEBUFFER_PIXEL_WIDTH / FRAMEBUFFER_PIXEL_HEIGHT;
+
+    // Calculate center points using original image dimensions
+    int center_x = x + base_width / 2;
+    int center_y = y + base_height / 2;
+
+    // For each pixel in the destination space
+    for (int dy = -output_height/2; dy < output_height/2; dy++) {
+        for (int dx = -output_width/2; dx < output_width/2; dx++) {
+            // Adjust coordinates for aspect ratio before rotation
+            float adjusted_dx = (float)dx / aspect_ratio;
+
+            // Rotate the point around the center
+            float rotated_x = (adjusted_dx * cos_angle - dy * sin_angle) * aspect_ratio;
+            float rotated_y = adjusted_dx * sin_angle + dy * cos_angle;
+
+            // Convert back to source image coordinates
+            int src_x = (int)((rotated_x / FRAMEBUFFER_PIXEL_WIDTH) + image_width/2);
+            int src_y = (int)((rotated_y / FRAMEBUFFER_PIXEL_HEIGHT) + image_height/2);
+
+            // Check if the source pixel is within the image bounds
+            if (src_x >= 0 && src_x < image_width && src_y >= 0 && src_y < image_height) {
+                int src_idx = src_y * image_width + src_x;
+                int mask_byte_idx = src_idx >> 3;
+                int mask_bit_pos = src_idx & 0x07;
+
+                // Skip pixel if it's transparent in the mask (bit = 0)
+                if (!(mask_data[mask_byte_idx] & (1 << mask_bit_pos))) {
+                    continue;
+                }
+
+                // Calculate destination coordinates
+                int dest_x = center_x + dx;
+                int dest_y = center_y + dy;
+
+                // Check if the destination pixel is within the framebuffer bounds
+                if (dest_x >= 0 && dest_x < FRAMEBUFFER_WIDTH &&
+                    dest_y >= 0 && dest_y < FRAMEBUFFER_HEIGHT) {
+                    buffer[dest_y * FRAMEBUFFER_WIDTH + dest_x] = image_data[src_idx];
+                }
+            }
+        }
+    }
+}
+
+// Draw line using Bresenham's algorithm
+void draw_line(uint8_t *buffer, int x0, int y0, int x1, int y1, int color) {
+    x0 *= FRAMEBUFFER_PIXEL_WIDTH;
+    y0 *= FRAMEBUFFER_PIXEL_HEIGHT;
+    x1 *= FRAMEBUFFER_PIXEL_WIDTH;
+    y1 *= FRAMEBUFFER_PIXEL_HEIGHT;
+
+    // Boundary check
+    if (x0 < 0 || y0 < 0 || x0 >= FRAMEBUFFER_WIDTH || y0 >= FRAMEBUFFER_HEIGHT ||
+        x1 < 0 || y1 < 0 || x1 >= FRAMEBUFFER_WIDTH || y1 >= FRAMEBUFFER_HEIGHT) {
+        return;
+    }
+
+    int dx = abs(x1 - x0);
+    int dy = abs(y1 - y0);
+    int sx = x0 < x1 ? 1 : -1;
+    int sy = y0 < y1 ? 1 : -1;
+    int err = (dx > dy ? dx : -dy) / 2;
+    int e2;
+
+    while (1) {
+        // Draw pixel at current position
+        if (x0 >= 0 && x0 < FRAMEBUFFER_WIDTH && y0 >= 0 && y0 < FRAMEBUFFER_HEIGHT) {
+            buffer[y0 * FRAMEBUFFER_WIDTH + x0] = color;
+            // Apply pixel scaling
+            if (FRAMEBUFFER_PIXEL_WIDTH == 2) {
+                buffer[y0 * FRAMEBUFFER_WIDTH + x0 + 1] = color;
+            }
+        }
+
+        if (x0 == x1 && y0 == y1) break;
+
+        e2 = err;
+        if (e2 > -dx) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dy) {
+            err += dx;
+            y0 += sy;
         }
     }
 }

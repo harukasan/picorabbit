@@ -50,8 +50,9 @@ mrb_draw_image(mrb_state *mrb, mrb_value self)
 {
     mrb_value image_name;
     mrb_int x, y;
+    mrb_float angle = 0.0;
 
-    mrb_get_args(mrb, "oii", &image_name, &x, &y);
+    mrb_get_args(mrb, "oii|f", &image_name, &x, &y, &angle);
 
     if (!mrb_symbol_p(image_name)) {
         mrb_raise(mrb, E_TYPE_ERROR, "image name must be a symbol");
@@ -88,7 +89,11 @@ mrb_draw_image(mrb_state *mrb, mrb_value self)
     }
 
     if (has_mask) {
-        draw_image_masked(framebuffer_get_draw(), image_data, mask_data, x, y, width, height);
+        if (angle != 0.0) {
+            draw_image_masked_rotated(framebuffer_get_draw(), image_data, mask_data, x, y, width, height, angle);
+        } else {
+            draw_image_masked(framebuffer_get_draw(), image_data, mask_data, x, y, width, height);
+        }
     } else {
         draw_image(framebuffer_get_draw(), image_data, x, y, width, height);
     }
@@ -100,6 +105,17 @@ static mrb_value
 mrb_commit(mrb_state *mrb, mrb_value self)
 {
     framebuffer_commit();
+    return mrb_nil_value();
+}
+
+static mrb_value
+mrb_draw_line(mrb_state *mrb, mrb_value self)
+{
+    mrb_int x0, y0, x1, y1, color;
+    mrb_get_args(mrb, "iiiii", &x0, &y0, &x1, &y1, &color);
+
+    draw_line(framebuffer_get_draw(), x0, y0, x1, y1, color);
+
     return mrb_nil_value();
 }
 
@@ -116,6 +132,7 @@ void mrb_mruby_picorabbit_draw_gem_init(mrb_state *mrb)
     mrb_define_module_function(mrb, module_draw, "draw_rect", mrb_draw_rect, MRB_ARGS_REQ(5));
     mrb_define_module_function(mrb, module_draw, "draw_text", mrb_draw_text_with_color, MRB_ARGS_REQ(4));
     mrb_define_module_function(mrb, module_draw, "draw_image", mrb_draw_image, MRB_ARGS_REQ(5));
+    mrb_define_module_function(mrb, module_draw, "draw_line", mrb_draw_line, MRB_ARGS_REQ(5));
     mrb_define_module_function(mrb, module_draw, "commit", mrb_commit, MRB_ARGS_NONE());
 
     mrb_mruby_picorabbit_draw_gem_init_textbuf(mrb, module_draw);
