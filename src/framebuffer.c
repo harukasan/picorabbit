@@ -47,7 +47,7 @@ void framebuffer_commit(void)
 
 uint32_t framebuffer_get_addr(uint32_t line)
 {
-    return (uint32_t)&framebuffer_buffers[framebuffer.current_display_buffer][(line / 2) * FRAMEBUFFER_WIDTH];
+    return (uint32_t)(&framebuffer_buffers[framebuffer.current_display_buffer][0] + ((line >> 1) * FRAMEBUFFER_WIDTH));
 }
 
 void framebuffer_get_line(uint8_t *line_buffer, uint32_t line)

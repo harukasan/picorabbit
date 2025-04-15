@@ -2,6 +2,7 @@
 #include <mruby/string.h>
 #include <mruby/data.h>
 #include <string.h>
+
 #include "../../../include/framebuffer.h"
 #include "../../../include/draw.h"
 #include "../../../include/image.h"
@@ -40,7 +41,7 @@ mrb_draw_text_with_color(mrb_state *mrb, mrb_value self)
 
     uint8_t *buffer = framebuffer_get_draw();
 
-    draw_text(buffer, x, y, mrb_string_value_cstr(mrb, &str), color);
+    draw_text_esc(buffer, x, y, mrb_string_value_cstr(mrb, &str), color);
 
     return mrb_nil_value();
 }
@@ -54,7 +55,8 @@ mrb_draw_image(mrb_state *mrb, mrb_value self)
 
     mrb_get_args(mrb, "oii|f", &image_name, &x, &y, &angle);
 
-    if (!mrb_symbol_p(image_name)) {
+    if (!mrb_symbol_p(image_name))
+    {
         mrb_raise(mrb, E_TYPE_ERROR, "image name must be a symbol");
         return mrb_nil_value();
     }
@@ -66,35 +68,55 @@ mrb_draw_image(mrb_state *mrb, mrb_value self)
     int width = 0;
     int height = 0;
     bool has_mask = false;
-    if (strcmp(name, "rubykaigi2025") == 0) {
+    if (strcmp(name, "rubykaigi2025") == 0)
+    {
         image_data = image_data_rubykaigi2025;
         has_mask = false;
         width = IMAGE_WIDTH_RUBYKAIGI2025;
         height = IMAGE_HEIGHT_RUBYKAIGI2025;
-    } else if (strcmp(name, "kame") == 0) {
+    }
+    else if (strcmp(name, "background") == 0)
+    {
+        image_data = image_data_background;
+        has_mask = false;
+        width = IMAGE_WIDTH_BACKGROUND;
+        height = IMAGE_HEIGHT_BACKGROUND;
+    }
+    else if (strcmp(name, "kame") == 0)
+    {
         image_data = image_data_kame;
         mask_data = mask_data_kame;
         has_mask = true;
         width = IMAGE_WIDTH_KAME;
         height = IMAGE_HEIGHT_KAME;
-    } else if (strcmp(name, "usagi") == 0) {
+    }
+    else if (strcmp(name, "usagi") == 0)
+    {
         image_data = image_data_usagi;
         mask_data = mask_data_usagi;
         has_mask = true;
         width = IMAGE_WIDTH_USAGI;
         height = IMAGE_HEIGHT_USAGI;
-    } else {
+    }
+    else
+    {
         mrb_raisef(mrb, E_ARGUMENT_ERROR, "unknown image name: %s", name);
         return mrb_nil_value();
     }
 
-    if (has_mask) {
-        if (angle != 0.0) {
+    if (has_mask)
+    {
+        if (angle != 0.0)
+        {
             draw_image_masked_rotated(framebuffer_get_draw(), image_data, mask_data, x, y, width, height, angle);
-        } else {
+        }
+        else
+        {
             draw_image_masked(framebuffer_get_draw(), image_data, mask_data, x, y, width, height);
         }
-    } else {
+    }
+    else
+    {
         draw_image(framebuffer_get_draw(), image_data, x, y, width, height);
     }
 
@@ -138,6 +160,7 @@ void mrb_mruby_picorabbit_draw_gem_init(mrb_state *mrb)
     mrb_mruby_picorabbit_draw_gem_init_textbuf(mrb, module_draw);
 }
 
-void mrb_mruby_picorabbit_draw_gem_final(mrb_state *mrb) {
+void mrb_mruby_picorabbit_draw_gem_final(mrb_state *mrb)
+{
     mrb_mruby_picorabbit_draw_gem_final_textbuf(mrb);
 }
