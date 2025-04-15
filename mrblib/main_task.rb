@@ -249,9 +249,13 @@ loop do
 
   unless pressed
     if press[:right]
-      count += 1
+      if count < slides.size - 1
+        count += 1
+      end
     elsif press[:left]
-      count -= 1
+      if count > 0
+        count -= 1
+      end
     end
 
     press.each do |key, value|
