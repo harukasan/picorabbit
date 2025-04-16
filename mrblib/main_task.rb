@@ -328,7 +328,7 @@ loop do
       # スコア表示
       draw_text("SCORE: #{score}", 220, 8, COLOR_BLACK)
     else
-      draw_text("GAME OVER", 100, 100, COLOR_BLACK)
+      draw_text("GAME OVER", (320 - "GAME OVER".length * 8) / 2, 100, COLOR_BLACK)
       draw_text("SCORE: #{score}", 220, 8, COLOR_BLACK)
     end
   else
