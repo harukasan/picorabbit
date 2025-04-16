@@ -20,11 +20,11 @@ end
 text = <<~'TEXT'
 =
 
-
-
 \e[FF]              PicoRabbit:
 \e[FF]      a Tiny Presentation Device
 \e[FF]            Powered by Ruby
+
+
 
 
 
@@ -105,10 +105,8 @@ It can use the same way as PicoRuby
 MRuby::CrossBuild.new("mruby-cortex-m33") do |conf|
   conf.toolchain :gcc
   conf.host_target = "arm-none-eabi"
-  conf.cc.command = "#{conf.host_target}-gcc"
-  conf.linker.command = "#{conf.host_target}-ld"
-  conf.linker.flags << "-static"
-  conf.archiver.command = "#{conf.host_target}-gcc-ar"
+
+  (snip)  
 
   conf.cc.flags.flatten!
   conf.cc.flags << "-O3"
@@ -118,9 +116,9 @@ MRuby::CrossBuild.new("mruby-cortex-m33") do |conf|
 = mrbgems for PicoRabbit
 
 * mruby-pico-gpio
-* mruby-pico-memory-usage
 * mruby-pico-print
 * mruby-pico-time
+* mruby-pico-memory-usage
 * mruby-picorabbit-draw
 
 = mrbgems difference of mruby/c and mruby
@@ -168,7 +166,7 @@ Next slide starts the game!
 TEXT
 
 margin_x = 4
-margin_y = 20
+margin_y = 36
 
 slides = []
 elements = []
@@ -263,20 +261,21 @@ loop do
     end
   end
 
-  background COLOR_WHITE
-  border_y = 6
-  draw_rect 0, 0, 320, border_y, COLOR_RUBYKAIGI_RED
-  draw_rect 0, 240-border_y, 320, 240-border_y, COLOR_RUBYKAIGI_RED
 
-  if count == 1
+  case count
+  when 0
+    draw_image :rubykaigi2025, 0, 0
+  when 1
     draw_image :background, 0, 0
+  else
+    background COLOR_WHITE
+    border_y = 6
+    draw_rect 0, 0, 320, border_y, COLOR_RUBYKAIGI_RED
+    draw_rect 0, 240-border_y, 320, 240-border_y, COLOR_RUBYKAIGI_RED
   end
 
   draw_slide(slides[count])
 
-  if count == 0
-    draw_image :rubykaigi2025, 0, 0
-  end
 
   if count == 2
     shape_y = 190
