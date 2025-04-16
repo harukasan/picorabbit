@@ -39,7 +39,7 @@ Rabbit, running on Raspberry Pi Pico 2.
 
 * Realtime digital video output
 * Slide engine built on mruby VM
-* Drawing: text, image, shapes
+* Drawing: \e[C0]t\e[F0]e\e[28]x\e[01]t\e[reset], image, shapes
 
 Available on GitHub:
 github.com/harukasan/picorabbit
@@ -190,6 +190,7 @@ button_right = GPIO.new(8, GPIO::PULL_UP)
 button_left = GPIO.new(10, GPIO::PULL_UP)
 button_up = GPIO.new(11, GPIO::PULL_UP)
 button_a = GPIO.new(21, GPIO::PULL_UP)
+button_b = GPIO.new(20, GPIO::PULL_UP)
 
 press = {
   up: false,
@@ -197,6 +198,7 @@ press = {
   left: false,
   right: false,
   a: false,
+  b: false,
 }
 
 count = 0
@@ -244,6 +246,10 @@ loop do
     press[:a] = true
     pressed = true
   end
+  if button_b.read == 0
+    press[:b] = true
+    pressed = true
+  end
 
   unless pressed
     if press[:right]
@@ -261,6 +267,9 @@ loop do
     end
   end
 
+  if press[:b]
+    start_time = time_usec_32
+  end
 
   case count
   when 0
