@@ -20,6 +20,28 @@ set(PICO_PLATFORM rp2350)
 
 include(pico_sdk_import.cmake)
 
+# Get version from git tag
+find_package(Git QUIET)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} describe --tags --always
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+else()
+    set(GIT_VERSION "unknown")
+endif()
+execute_process (
+    COMMAND date +%Y%m%d
+    OUTPUT_VARIABLE CMAKE_BUILD_DATE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+
+set(PICORABBIT_VERSION ${GIT_VERSION})
+set(PICORABBIT_BUILD_DATE ${CMAKE_BUILD_DATE})
+
 project(picorabbit_dvi C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -69,6 +91,11 @@ add_executable(picorabbit_dvi
 
 # Add dependency to ensure MRuby is built before the main target
 add_dependencies(picorabbit_dvi build_mruby)
+
+# Set output name with version
+set_target_properties(picorabbit_dvi PROPERTIES
+    OUTPUT_NAME "picorabbit_dvi-${PICORABBIT_VERSION}-${PICORABBIT_BUILD_DATE}"
+)
 
 # Include paths for header files
 target_include_directories(picorabbit_dvi PRIVATE
