@@ -123,6 +123,14 @@ pico_enable_stdio_uart(picorabbit_dvi 1)
 # Generate .uf2 file
 pico_add_extra_outputs(picorabbit_dvi)
 
+add_custom_command(
+    TARGET picorabbit_dvi
+    POST_BUILD
+    COMMAND gzip -kf ${CMAKE_BINARY_DIR}/picorabbit_dvi-${PICORABBIT_VERSION}-${PICORABBIT_BUILD_DATE}.uf2
+    COMMAND zip -j ${CMAKE_BINARY_DIR}/picorabbit_dvi-${PICORABBIT_VERSION}-${PICORABBIT_BUILD_DATE}.uf2.zip ${CMAKE_BINARY_DIR}/picorabbit_dvi-${PICORABBIT_VERSION}-${PICORABBIT_BUILD_DATE}.uf2
+    COMMENT "Compressing output files..."
+)
+
 string(APPEND CMAKE_EXE_LINKER_FLAGS "-Wl,--print-memory-usage")
 
 add_subdirectory(tests EXCLUDE_FROM_ALL)
