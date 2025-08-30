@@ -93,9 +93,9 @@ add_executable(picorabbit_dvi
 add_dependencies(picorabbit_dvi build_mruby)
 
 # Set output name with version
-set_target_properties(picorabbit_dvi PROPERTIES
-    OUTPUT_NAME "picorabbit_dvi-${PICORABBIT_VERSION}-${PICORABBIT_BUILD_DATE}"
-)
+#set_target_properties(picorabbit_dvi PROPERTIES
+#    OUTPUT_NAME "picorabbit_dvi-${PICORABBIT_VERSION}-${PICORABBIT_BUILD_DATE}"
+#)
 
 # Include paths for header files
 target_include_directories(picorabbit_dvi PRIVATE
