@@ -20,9 +20,8 @@ end
 text = <<~'TEXT'
 =
 
-\e[FF]              PicoRabbit:
-\e[FF]      a Tiny Presentation Device
-\e[FF]            Powered by Ruby
+\e[FF]        Successor to PicoRabbit:
+\e[FF]      Ruby Programming Environment
 
 
 
@@ -30,138 +29,193 @@ text = <<~'TEXT'
 
 \e[FF]            Shunsuke Michii
 \e[FF]              @harukasan
-\e[FF]      April 17 2025, RubyKaigi 2025
+\e[FF]             August 30 2025
+\e[FF]        RubyKaigi 2025 follow up
 
 = What is PicoRabbit?
 
 A tiny presentation device inspired by
 Rabbit, running on Raspberry Pi Pico 2.
 
-* Realtime digital video output
-* Slide engine built on mruby VM
-* Drawing: \e[C0]t\e[F0]e\e[28]x\e[01]t\e[reset], image, shapes
-
 Available on GitHub:
 github.com/harukasan/picorabbit
 
+
+I demonstrated this at
+the Lightning Talks of RubyKaigi 2025.
+
+= Features
+
+* Running on mruby
+* Realtime digital video output
+* Drawing: \e[C0]t\e[F0]e\e[28]x\e[01]t\e[reset], image, shapes
+* Slide engine
+
+It can run simple game written in Ruby.
+
+= R2P2: Ruby Rapid Portable Platform
+
+"Ruby on Raspberry Pi Pico"
+programming platform using PicoRuby.
+
+Features:
+  * Shell
+  * File system
+  * mruby Compiler
+  * IRB (Interactive Ruby)
+  * Editor
+
+= Missing for Portability
+
+R2P2 needs a terminal emulator on a PC
+
+For true portability,
+it needs to connect directly to:
+  * a screen for output
+  * a keyboard for input
+
 = Motivation
 
-At RubyKaigi2024, I saw "Dreampresent"
-running on both Wii and Dreamcast.
+I want to build a standalone platform,
+programming Ruby, like IchigoJam.
 
-My keyboard runs with PRK Firmware,
-powered by PicoRuby.
+PicoRabbit already has:
+  * screen output via DVI
+  * drawaing engine
 
-So I wondered:
-Can Pico run presentation too?
+= R2P2D2 (R2P2 Display Device)
 
-= Difficulties
+My current project to
+add a display and input to R2P2.
 
-+ DVI output handling
-  Requires extremely precise timing
+Output: DVI for the display.
+Input: USB HID support for keyboards.
 
-+ Limited memory
-  640x480 screen needs 307kB of memory
-  but RP2040 has only 264kB SRAM
+|------|  |========|---(Display)
+|      |--| R2P2D2 |
+| R2P2 |  |========|---(Keyboard)
+|      |
+|------|---------------(IO)
 
-+ Instability of PicoRuby
-  PicoRuby is still under development
-  Hard to get a stable build
+= Single-Chip Approach
 
-So, I gave up using PicoRuby on RP2040.
+Bundle the display driver as an mrbgem
 
+Pros: Single Pico, simple and cheap
+Cons: Very tight memory constraints
+Cons: Limited number of GPIO pins
 
-= Raspberry Pi Pico 2 made it possible
+= Dual-Chip Approach
 
-Raspberry Pi Pico 2
-features more powerful chip RP2350
-Great for real-time graphics
-and running the full mruby VM
+Separates R2P2 and the terminal onto
+two Pico chips
 
-* 520kB of SRAM (2x the previous Pico!)
-  Enough for a 640x480 screen
-  and the full mruby VM,
-  not just mruby/c
+Pros: Minimal changes to R2P2
+Pros: Dedicated CPU for display output
+Cons: Requires two chips (costs ~$20)
 
-* HSTX interface for DVI output
-  Enables direct DVI signal generation
+I tentatively call this R2P2D3
+(R2P2D2-Duo)
 
-= Running mruby on RP2350
+= Communication via UART
 
-Most steps can be based on PicoRuby.
+We can use UART for communication
+between the two Picos.
 
-1. Write build_config.rb
++------+            +------+
+| R2P2 |---(UART)---|  D2  |
++------+            +------+
 
-2. Build the mruby with mrbgems
+PicoSDK can redirect stdio to UART.
+So, we just need to change R2P2's
+STDIO to UART.
 
-3. Compile Ruby script with mrbc
+= Next steps
 
-4. Load and run in main.c
+* Implement terminal (WIP)
+* Design a new board
+* Add USB HID support
+* Add audio output
 
-= Write build_config.rb
+= Internals & Improvements
 
-It can use the same way as PicoRuby
+Today, I'd like to introduce some
+technical details and improvements
+after RubyKaigi 2025.
 
-MRuby::CrossBuild.new("mruby-cortex-m33") do |conf|
-  conf.toolchain :gcc
-  conf.host_target = "arm-none-eabi"
+Note:
 
-  (snip)  
+= HSTX
 
-  conf.cc.flags.flatten!
-  conf.cc.flags << "-O3"
-  conf.cc.flags << "-mcpu=cortex-m33"
-  ...
+PicoRabbit uses HSTX;
+  High-speed
+  Serial
+  Transmit
 
-= mrbgems for PicoRabbit
+It uses DDR registers to communicate
+at twice the system clock speed.
 
-* mruby-pico-gpio
-* mruby-pico-print
-* mruby-pico-time
-* mruby-pico-memory-usage
-* mruby-picorabbit-draw
+= DMA (Direct Memory Access)
 
-= mrbgems difference of mruby/c and mruby
+HSTX has 32bit FIFO.
+It uses DMA to transfer data.
+In PicoRabbit, the DMA handler sets the
+framebuffer address for each scanline.
 
-PicoRuby supports mrbgems.
-But method/class definition APIs
-are different between mruby and mruby/c.
+= Framebuffer
 
-In mruby/c:
-mrbc_class *c = mrbc_define_class(vm, "GPIO", mrbc_class_object);
-mrbc_define_method(vm, c, "write", c_write);
+PicoRabbit uses:
 
-In mruby:
-mrb_value c = mrb_define_class(mrb, "GPIO", mrb->object_class);
-MRB_SET_INSTANCE_TT(c, MRB_TT_DATA);
-mrb_define_method(mrb, c, "write", c_write, MRB_ARGS_REQ(1));
+  * double buffered framebuffer
+  * half-height resolution
+  * RGB332 1bpp color
 
-= Future
+640 x 240 x 2 x 1 = 307,200B
+59% of RP2350 memory
 
-* Remove output noise
-* USB mass storage support
-* PicoRuby integration
-* Keyboard input support
+= Changing to half-size framebuffer
 
-Not just a presentation device -
-I want PicoRabbit to become
-a standalone programming tool
-that runs mruby on its own.
+Changing to a 320x240px screen size
+cuts the memory usage in half.
 
-= Thank you!
+320 x 240 x 2 x 1 = 153,600B
 
-I have a few boards to give away.
-Talk to me after the session!
+But, it requires 2x scaling in the
+DMA handler.
 
-github.com/harukasan/picorabbit
+= Stabilizing DMA
 
-= BONUS TIME
+PicoRabbit refers to Raspberry Pi's
+example implementation.
+It uses two DMA channels in
+a "ping-pong" setup.
 
-Have time left?  
-Next slide starts the game!
+If the handler couldn't
+prepare the next buffer in time,
+it caused screen glitches.
 
-=
+Improvement:
+Use three DMA channels to transfer
 
+= Use multiple line buffers
+
+Add small line buffer for 2x scaling
+in the DMA handler
+
+= WIP: text rendering into line buffer
+
+To save memory, we can render text
+directly into the line buffer
+instead of framebuffer.
+
+= Next steps
+
+* Implement terminal (WIP)
+* Design a new board
+* Add USB HID support
+* Add audio output
+
+= 
 
 TEXT
 
@@ -286,8 +340,8 @@ loop do
   draw_slide(slides[count])
 
 
-  if count == 2
-    shape_y = 190
+  if count == 3
+    shape_y = 150
     draw_rotating_line(f, 320/2, shape_y, 40, 0.02, COLOR_RUBYKAIGI_GREEN)
     draw_rect 80-20, shape_y-20, 40, 40, (f%255)
     draw_image :usagi, 320-80, shape_y - 10, -1 * f.to_f
